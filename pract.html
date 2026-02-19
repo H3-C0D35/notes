@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+</html>
+
+<!--
+?Name (text) Gender (radio: Male/Female) Hobbies (checkboxes: Reading, Gaming, Sports) Submit button
+?On submit, a JS function should display in a <p>: Name, Gender, List of hobbies
+?Requirements: Use getElementById(), .value, .checked, loops if needed.-->
+<!--<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="main">
+      <form>
+        <label for="name">Name: </label>
+        <input id="name" type="text" placeholder="name" />
+        <br /><br />
+
+        <label id="g">Gender: </label><br />
+        <input id="m" type="radio" value="Male" />Male
+        <input id="f" type="radio" value="Female" />Female <br /><br />
+
+        <label id="hobbies">Hobbies: </label><br />
+        <input id="d" type="checkbox" value="Drawing" />Drawing<br />
+        <input id="r" type="checkbox" value="Reading" />Reading<br />
+        <input id="b" type="checkbox" value="Badminton" />Badminton<br />
+        <input id="c" type="checkbox" value="Chess" />Chess<br />
+        <input id="s" type="checkbox" value="Swimming" />Swimming<br />
+        <input id="k" type="checkbox" value="Karate" />Karate<br /><br />
+
+        <button type="button" onclick="handlesubmit()">Click</button>
+      </form>
+    </div>
+    <p id="demo1"></p>
+    <p id="demo2"></p>
+    <p id="demo3"></p>
+
+    <script>
+      function handlesubmit() {
+        let name = document.getElementById("name").value;
+
+        document.getElementById("demo1").innerHTML = "Name: " + name;
+
+        let gender = "";
+        if (document.getElementById("m").checked) {
+          gender = "male";
+        } else if (document.getElementById("f").checked) {
+          gender = "female";
+        }
+        document.getElementById("demo2").innerHTML = "Gender: " + gender;
+
+        let hobbies = [];
+        if (document.getElementById("d").checked) hobbies.push("Drawing");
+        if (document.getElementById("r").checked) hobbies.push("Reading");
+        if (document.getElementById("b").checked) hobbies.push("Badminton");
+        if (document.getElementById("c").checked) hobbies.push("Chess");
+        if (document.getElementById("s").checked) hobbies.push("Swimming");
+        if (document.getElementById("k").checked) hobbies.push("Karate");
+
+        document.getElementById("demo3").innerHTML =
+          "Hobbies: " + hobbies.join(", ");
+      }
+    </script>
+  </body>
+</html>
+-->
+
+<!--? RANDOM NUMBERS GENERATOR 
+-->
+<!--<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <p id="demo"></p>
+
+    <button onclick="num()">Click me for random number</button>
+
+    <script>
+      function num() {
+        let x = Math.floor(Math.random() * 100) + 1;
+        document.getElementById("demo").innerHTML = x;
+      }
+    </script>
+  </body>
+</html>-->
+
+<!--? book adding, displaying and counting using arrays? -->
+<!--<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h3>OUTPUT:</h3>
+    <p id="demo1"></p>
+    <p id="demo2"></p>
+    <p id="demo3"></p>
+
+    <script>
+      let books = [];
+      let msg = "";
+      function addbook(name) {
+        //fun
+        books.push(name);
+        msg += `${name} added.<br>`;
+      }
+      function showbook() {
+        //fun
+        return `Books: [${books.join(", ")}]`;
+      }
+
+      function countbook() {
+        //fun
+        return books.length;
+      }
+
+      for (let i = 0; i < 3; i++) {
+        let name = prompt("Enter a book: ");
+        addbook(name);
+      }
+      document.getElementById("demo1").innerHTML = msg;
+      document.getElementById("demo2").innerHTML = showbook();
+      document.getElementById(
+        "demo3"
+      ).innerHTML = `Total books: ${countbook()}`;
+    </script>
+  </body>
+</html>
+-->
+
+<!-- ?Takes n numbers from the user (using prompt inside a loop).Stores them in an array.Prints:
+?(a) The largest number  (b) The count of negative numbers  (c) The total sum of all numbers.  You must use:
+?an array, at least one loop, at least one if statement-->
+<!--<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h2>WASSSUPPPP</h2>
+    <p id="demo"></p>
+    <p id="demo2"></p>
+    <p id="demo3"></p>
+    <p id="demo4"></p>
+
+    <script>
+      let arr = [];
+      for (let i = 0; i < 5; i++) {
+        let n = Number(prompt("Enter a number: "));
+        arr.push(n);
+      }
+      let x = `${arr}`;
+
+      var max = 0;
+      for (let i = 0; i < 5; i++) {
+        if (arr[i] > arr[max]) {
+          max = i;
+        }
+      }
+      var count = 0;
+      for (let i = 0; i < 5; i++) {
+        if (arr[i] < 0) {
+          count++;
+        }
+      }
+      var sum = 0;
+      for (let i = 0; i < 5; i++) {
+        sum += arr[i];
+      }
+
+      let w = `Sum of elements: ${sum}`;
+      let y = `Largest number in the array: ${arr[max]}`;
+      let z = `Count of negative numbers: ${count}`;
+      document.getElementById("demo").innerHTML = x;
+      document.getElementById("demo2").innerHTML = y;
+      document.getElementById("demo3").innerHTML = z;
+      document.getElementById("demo4").innerHTML = w;
+    </script>
+  </body>
+</html>
+-->
