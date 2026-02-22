@@ -3,6 +3,79 @@
 #include <cmath>
 using namespace std;
 
+/* //! ARRAY OF OBJECTS
+ *Can be initialized in two ways:
+ *----without default constructor----
+Laptop laptops[] = { Laptop("HP", 8), Laptop("Dell", 16), Laptop("Asus", 32) };
+
+*----with default constructor----
+Laptop() : brandname("Unknown"), price(0.0) {};   //*constructor
+Laptop laptops[3];      //* then in main
+
+*default Constructor is Required if the elements of the array need to be automatically initialized without specifying parameters.
+*Explicit Initialization is used If you initialize each object with parameters, then you can avoid the need for a default constructor.
+
+
+ */
+
+/* //! COMPOSITION AND AGGREGATION
+*Objects can be created in classes using composition and aggregation.
+*Distinction between composition and aggregation is lifecycle of object.
+*COMPOSITION: If object of a class is dependent on another class, it has strong relationship with object
+*AGGREGATION: If object is independent it is aggreg and has a weak relationship with class. It can stay alive even if the class is destroyed because a reference is passed as object in it.
+*Aggregation uses pointers/adresses
+
+*In aggregation, objects can be initialized using constructors through several ways:
+class Student {
+public:
+    int id;
+    string name;
+    Laptop *L; //* Pointer to a Laptop
+
+    Student(int id, string name, Laptop *Lap) {
+        this->id = id;
+        this->name = name;
+        this->L = Lap; //* Assign Laptop pointer
+    }
+
+        *IF USING MEMBER INITIALIZATION LIST,
+    Student(int id, string name, Laptop *Lap) : Lap(L) {}
+    *then in main, use "->" when using any members of Laptop.
+
+        *IF USING REFERENCE,
+    class Student {
+    public:
+    int id;
+    string name;
+    Laptop &L;
+
+    Student(int id, string name, Laptop &Lap) : id(id), name(name), L(Lap) {}
+    *then in main, use "." when using any members of Laptop.
+
+    *------------WAYS TO DISPLAY DETAILS:-----------
+*USING REF &
+    Laptop lap1("HP", 8, 4000);
+    Laptop lap2("Dell", 8, 6000);
+    Student s1(501, "Ahlele", lap1);
+    Student s2(502, "Ahlelas", lap2);
+
+*USING POINTERS
+    Laptop lap1("HP", 8, 4000);
+    Laptop lap2("Dell", 8, 6000);
+    Student s1(501, "Ahlele", &lap1);
+    Student s2(502, "Ahlelas", &lap2);
+
+*USING DMA with POINTERS
+    Laptop *lap1 = new Laptop("HP", 8, 4000);
+    Laptop *lap2 = new Laptop("Dell", 8, 6000);
+    Student s1(501, "Ahlele", lap1);
+    Student s2(502, "Ahlelas", lap2);
+    delete lap1;
+    delete lap2;
+
+
+ */
+
 /* //! STATIC
  *Static means:
  * 1. Belongs to the class not to any object 2.Exists even if zero objects exist
@@ -183,7 +256,7 @@ public:
     }
 
 * default constructor for dma. since user-made constructors have args, a custom default is made so that during
-* dma, the ocnstructor can exist without parameters.
+* dma, the constructor can exist without parameters.
     User()
     {
         id = 0;
@@ -253,6 +326,93 @@ int main()
     delete[] users;
 }*/
 
+/* //! COPY CONSTRUCTORS
+*Default copy constructor = shallow copy
+ClassName(const ClassName &obj);        //* where const keyword and & is important
+ Student new_obj = old_obj;             //* then in main calls default copy constructor
+
+ *USER-DEFINED DEEP COPY CONSTRUCTOR
+ ClassName(const ClassName &obj)
+{
+    //* copy data here
+
+}
+*COPY CONSTRUCTOR IS CALLED WHEN object is initialized or copied, a value is passed to a function or a function returns some value.
+*IF CLASS CONTAINS POINTERS:
+int* ptr;
+ptr = obj.ptr;
+----------------------
+int* marks;
+marks = new int[size];      //* need to dynamically allocate memory
+for(int i = 0; i < size; i++)
+    marks[i] = obj.marks[i];
+*/
+/*//! SHALLOW COPY WIHTOUT USING ANY COPY CONSTRUCTOR
+class Book
+{
+private:
+    string title;
+    const int id;
+
+public:
+    Book(string title, int id) : title(title), id(id) {}
+
+    string getTitle()
+    {
+        return title;
+    }
+
+    int getid()
+    {
+        return id;
+    }
+    void display()
+    {
+        cout << "TTILE: " << title << endl;
+        cout << "ID: " << id << endl;
+    }
+};
+int main()
+{
+    Book b1("OOP GUIDE", 101);
+    Book b2 = b1;
+    b2.display();
+}
+*/
+
+/*//! DEEP COPY EXAMPLE
+class Library {
+private:
+    int size;
+    int* books;
+
+public:
+//* Parameterized constructor
+    Library(int s) : size(s) {
+        books = new int[size];      //* Allocate memory for books
+
+//        * Initialize books with some default values (optional)
+        for (int i = 0; i < size; ++i) {
+            books[i] = 0;
+        }
+    }
+
+    // Destructor
+    ~Library() {
+        delete[] books;
+    }
+
+//*    Deep Copy constructor
+    Library(const Library& otherbook) : size(otherbook.size) {      //*since its in private otherwise do size = otherbook.size
+        books = new int[size];              //* Allocate new memory for books
+        //* Perform deep copy using a loop
+        for (int i = 0; i < size; ++i) {
+            books[i] = otherbook.books[i];
+        }
+    }
+};
+*/
+
 /* //! CONSTRUCTOR III
 ?Create a generalized class named Vehicle with public mems make and model and displayInfo(). create a
 ?specialized class Car that inherits from Vehicle. The Car class should have a public memb engineType
@@ -307,7 +467,7 @@ int main()
 ?Define a Concrete class with private string data member message. should have a constructor
 ?that takes string as argument and initializes the message data member. have a public
 ?func that prints the stored message. A concrete class provides an implementation for all of its methods.
-* to use a priv member in public as an argument in a constructor,
+* to use a priv member in public as an argument in a constructor, use ""member initialization list"
 *SYNTAX : Constructor_name(return_type var_name) : private_Att(var_name){};
 * TO CALL IT : Constructor_name obj_name(var);
 
