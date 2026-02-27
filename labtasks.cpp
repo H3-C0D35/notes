@@ -1,13 +1,6 @@
 #include <iostream>
 using namespace std;
-
-int main()
-{
-
-    string
-}
-
-/*class User
+class User
 {
     int userID;
     string name;
@@ -147,4 +140,5 @@ Your program should at least do the following:
 8. Class Diagram: 6 marks
 ○ Draw a proper class diagram showing:
 ■ Classes with their attributes & methods.
-■ aggregation, and composition relationships.*/
+■ aggregation, and composition relationships.
+*/
