@@ -1,107 +1,220 @@
 #include <iostream>
+#include <string>
 using namespace std;
-class User
+class Car
 {
-    int userID;
-    string name;
-    int number;
-    string password;
-    string role;
-
-public:
-    void login();
-    void logout();
-    void updateprofile();
-    void viewDashboard();
+    string engineType;
+    string fueltype;
+    int doors;
+    string condition;
 };
-class Buyer : public User
+class Bike
 {
-public:
-    string savedVehicles[100];
-    bool messageSent;
-    string location;
-    double budget;
-    double buyerRating;
-    // funcs
-    void saveToFav();
-    void removeFromFav();
-    void sendMessage();
-    void viewSavedVehicles();
-};
-class Seller : public User
-{
-public:
-    double sellerRating;
-    int totalListings;
-    bool verifiedStatus;
-    int lisitngs[100];
-    double accountBalance;
-    // funcs
-    void addListing();
-    void updateListing();
-    void deleteListing();
-    void respondToMessage();
+    string engineType;
+    string fueltype;
+    double weight;
+    string condition;
 };
 
-class Admin : public User
-{
-    int AdminLevel;
-    bool permissions;
-    int totalApprovedListings;
-    int reportsHandled;
-    string lastLogin;
-
-    // Functions:
-    int approveListing();
-    void removeListing();
-    void banUser();
-    void generateReport();
-};
-// class 2
 class Vehicle
 {
-public:
     int vehicleID;
     string brand;
     string model;
     int year;
-    double mileage;
     double price;
-    // func
-    void displayInfo();
-    void updatePrice();
-    void calcDeprication();
-    void matchSearch();
+    double mileage;
+    string isauto;
+
+public:
+    Vehicle(int id, string brand, string model, int year, double price, double mileage) : vehicleID(id), brand(brand), model(model), year(year), price(price), mileage(mileage) {}
+    void isAutomatic()
+    {
+        if (price > 70000)
+        {
+            isauto = "YES";
+        }
+        else
+        {
+            isauto = "NO";
+        }
+    }
+    void showSpecs()
+    {
+        cout << "\n-------DETAILS-------";
+        cout << "Vehicle ID: " << vehicleID << endl;
+        cout << "Brand: " << brand << endl;
+        cout << "Model: " << model << endl;
+        cout << "Year: " << year << endl;
+        cout << "Price: " << price << endl;
+        cout << "Mileage: " << mileage << endl;
+        cout << "AUTOMATIC: ";
+        isAutomatic();
+        cout << "\n";
+    }
 };
-class Car : public Vehicle
+
+class Admin
 {
-    string engineType;
-    string transmission;
-    double fuelType;
-    int doors;
-    string condition;
+    int adminLevel;
+    bool permissions;
+    int totalApprovedListing;
+    /*why we do inheritance?
+    is it efficient?
 
-    // func
-    void showSpecs();
-    void calcResaleValue();
-    void isAutomatic(); // todo: bool
-    // void compareWith();
+    "it has a unique attribute"*/
+public:
+    Admin(int adminlvl, bool perms, int TAL) : adminLevel(adminlvl), permissions(perms), totalApprovedListing(TAL) {}
+
+    bool approveListing(int listingID)
+    {
+        cout << "Enter list ID: ";
+        cin >> listingID;
+        return true;
+    }
+    bool removeListing(int listingID)
+    {
+        cout << "Enter list ID: ";
+        cin >> listingID;
+        return true;
+    }
+    bool banUsers(int id)
+    {
+        cout << "Enter list ID: ";
+        cin >> id;
+        return true;
+    }
 };
-
-class Bike : public Vehicle
+class Buyer
 {
-    string engineType;
-    string bikeType;
-    double fuelType;
-    double weight;
-    string condition;
 
-    // funcs
-    void showSpecs();
-    void estimateMileage();
+    double budget;
+    bool sendmessage;
+    string savedVehicles[20];
 
-    // void compareWith();
+public:
+    Buyer(double budget, bool sendMessage, string savedV[20]) : budget(budget), sendmessage(sendMessage)
+    {
+        for (int i = 0; i < 20; i++)
+        {
+            savedVehicles[i] = savedV[i];
+        }
+    }
+    void viewSavedVehicles()
+    {
+        for (int i = 0; i < savedVehicles->length(); i++)
+        {
+            cout << "ID: "; // todo:  VEHICLE OBJ
+            cout << "Name: ";
+        }
+    }
+    void sendMessage(int sellerID, string message) // todo: MESSAGE OBJ
+    {
+        cout << "Enter Seller ID: ";
+        cin >> sellerID;
+        cout << "MESSAGE: \n";
+        cin >> message;
+    }
+    bool addtoFavs(int vehicleID) // todo VEHICLE OBJ
+    {
+        cout << "Enter Vehicle ID: ";
+        cin >> vehicleID;
+        if (vehicleID)
+        {
+            cout << "Added to Favs!\n";
+            return true;
+        }
+        else
+        {
+            cout << "Invalid vehicle ID.\n";
+            return false;
+        }
+    }
+    bool remfromFavs(int vehicleID)
+    {
+        cout << "Enter Vehicle ID: ";
+        cin >> vehicleID;
+        if (vehicleID)
+        {
+            cout << "Removed to Favs!\n";
+            return true;
+        }
+        else
+        {
+            cout << "Invalid vehicle ID.\n";
+            return false;
+        }
+    }
 };
+class User
+{
+    int userID, userNumber;
+    string username, password;
+    string role;
+
+public:
+    User(int id, int num, string name, string password, string role) : userID(id), userNumber(num), username(name), password(password), role(role) {};
+
+    void updateProfile()
+    {
+        int choice;
+        cout << "What do you want to change? \n";
+        cout << "1. ID\n2. Name: \n3. Number\n4. Password\n5. Role\nCHOICE: ";
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            cout << "Enter new ID: ";
+            cin >> userID;
+            break;
+
+        case 2:
+            cout << "Enter new Name: ";
+            cin >> username;
+            break;
+
+        case 3:
+            cout << "Enter new number: ";
+            cin >> userNumber;
+            break;
+
+        case 4:
+            cout << "Enter new password: ";
+            cin >> password;
+            break;
+
+        case 5:
+            cout << "Enter new role: ";
+            cin >> role;
+            break;
+
+        default:
+            cout << "INVALID!\n";
+            break;
+        }
+    }
+
+    void viewDashboard()
+    {
+    }
+};
+
+int main()
+{
+    int id, num;
+    string name, password, role;
+    cout << "Enter User ID: ";
+    cin >> id;
+    cout << "Enter Number: ";
+    cin >> num;
+    cout << "Enter Username: ";
+    cin >> name;
+    cout << "Enter Password: ";
+    cin >> password;
+    cout << "Enter Role: ";
+    cin >> role;
+    User u1(id, num, name, password, role);
+}
 
 /*Design and implement a Car Marketplace System similar to PakWheels (www.pakwheels.com)
 using Object-Oriented Programming principles. The assignment is intended to assess your
@@ -118,8 +231,7 @@ Requirements
 ○ You may use constructor overloading if necessary with proper reasoning
 ○ Use setters and getters wherever necessary, for private data members.
 3. Constants & Constant Functions: 2 marks
-○ Use at least five constant data members, constant pointer, and constant function in
-your program
+○ Use at least five constant data members, constant pointer, and constant function in your program
 
 4. Static Members: 2 marks
 ○ Use at least two static data member and static member function
