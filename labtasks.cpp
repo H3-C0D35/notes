@@ -1,21 +1,97 @@
+
+#define MAX_VEHICLES 100
 #include <iostream>
 #include <string>
+/*1user
+2admin
+3buyer
+4seller
+5search/filter
+6listings
+7vehicle
+8Inbox
+9favourites*/
 using namespace std;
-class Car
+class Search
 {
-    string engineType;
-    string fueltype;
-    int doors;
-    string condition;
-};
-class Bike
-{
-    string engineType;
-    string fueltype;
-    double weight;
-    string condition;
-};
+    Vehicle v;
 
+public:
+    Search() {}
+
+    void searchbyV(Vehicle v[], int count, int choice)
+    {
+        string b, m;
+        int y;
+        double ma, p;
+        Search s1;
+        switch (choice)
+        {
+        case 1:
+            cout << "Filter by brand name: ";
+            cin >> b;
+            for (int i = 0; i < count; i++)
+            {
+                if (v[i].getbrand() == b)
+                {
+                    v[i].showSpecs();
+                }
+            }
+            break;
+
+        case 2:
+            cout << "Filter by Model name: ";
+            cin >> m;
+            for (int i = 0; i < count; i++)
+            {
+                if (v[i].getmodel() == m)
+                {
+                    v[i].showSpecs();
+                }
+            }
+            break;
+
+        case 3:
+            cout << "Filter by year: ";
+            cin >> y;
+            for (int i = 0; i < count; i++)
+            {
+                if (v[i].getyear() == y)
+                {
+                    v[i].showSpecs();
+                }
+            }
+            break;
+
+        case 4:
+            cout << "Filter by price: ";
+            cin >> p;
+            for (int i = 0; i < count; i++)
+            {
+                if (v[i].getprice() == p)
+                {
+                    v[i].showSpecs();
+                }
+            }
+            break;
+
+        case 5:
+            cout << "Filter by Mileage: ";
+            cin >> ma;
+            for (int i = 0; i < count; i++)
+            {
+                if (v[i].getmileage() == ma)
+                {
+                    v[i].showSpecs();
+                }
+            }
+            break;
+        default:
+            cout << "INVALID!\n";
+            break;
+        }
+    }
+};
 class Vehicle
 {
     int vehicleID;
@@ -27,7 +103,28 @@ class Vehicle
     string isauto;
 
 public:
+    Vehicle() {}
     Vehicle(int id, string brand, string model, int year, double price, double mileage) : vehicleID(id), brand(brand), model(model), year(year), price(price), mileage(mileage) {}
+    string getbrand()
+    {
+        return brand;
+    }
+    string getmodel()
+    {
+        return model;
+    }
+    int getyear()
+    {
+        return year;
+    }
+    double getprice()
+    {
+        return price;
+    }
+    double getmileage()
+    {
+        return mileage;
+    }
     void isAutomatic()
     {
         if (price > 70000)
@@ -41,7 +138,7 @@ public:
     }
     void showSpecs()
     {
-        cout << "\n-------DETAILS-------";
+        cout << "\n-------DETAILS-------\n";
         cout << "Vehicle ID: " << vehicleID << endl;
         cout << "Brand: " << brand << endl;
         cout << "Model: " << model << endl;
@@ -214,6 +311,15 @@ int main()
     cout << "Enter Role: ";
     cin >> role;
     User u1(id, num, name, password, role);
+
+    int choice;
+
+    cout << "1.Brand\n2.Model\n3.Year\n4.Price\n5.Mileage\nHow do you wish to search vehicles by?: ";
+    cin >> choice;
+    Vehicle v1[MAX_VEHICLES];
+    int vehiCount = 0;
+    Search s1;
+    s1.searchbyV(v1, vehiCount, choice);
 }
 
 /*Design and implement a Car Marketplace System similar to PakWheels (www.pakwheels.com)

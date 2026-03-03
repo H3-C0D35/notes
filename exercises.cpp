@@ -1,6 +1,390 @@
 #include <iostream>
 #include <vector>
 using namespace std;
+/*class User
+{
+    int userID;
+    string Name;
+    int Number;
+    string Password;
+    string Role;
+
+public:
+    bool login(string mail, string password)
+    {
+        cout << "Enter mail: ";
+        cin >> mail;
+        cout << "Enter Password: ";
+        cin >> password;
+    }
+
+    void logout()
+    {
+        int flag;
+        cout << "Do you want to logout?(press 1): ";
+        cin >> flag;
+    }
+
+    void updateprofile(int id, string name, int number, string passsword, string role)
+    {
+        int choice;
+        cout << "What do you want to change? \n";
+        cout << "1. ID\n2. Name: \n3. Number\n4. Password\n5. Role\nCHOICE: ";
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            cout << "Enter new ID: ";
+            cin >> id;
+            userID = id;
+            break;
+
+        case 2:
+            cout << "Enter new Name: ";
+            cin >> name;
+            Name = name;
+            break;
+
+        case 3:
+            cout << "Enter new number: ";
+            cin >> number;
+            Number = number;
+            break;
+
+        case 4:
+            cout << "Enter new password: ";
+            cin >> passsword;
+            Password = passsword;
+            break;
+
+        case 5:
+            cout << "Enter new role: ";
+            cin >> role;
+            Role = role;
+            break;
+
+        default:
+            cout << "INVALID!";
+            break;
+        }
+    }
+
+    void viewDashboard();
+};
+
+class Buyer : public User
+{
+public:
+    string savedVehicles[100];
+    bool messageSent;
+    string location;
+    double budget;
+    double buyerRating;
+    // funcs
+    void saveToFav(int vehicleID)
+    {
+        int favouriteslist[100];
+        int count = 0;
+        cout << "Which vehicle do you want to save to Favourites?: ";
+        cin >> vehicleID;
+        favouriteslist[count] = vehicleID;
+        count++;
+    }
+
+    void removeFromFav(int vehicleID);
+    void sendMessage(int sellerID, string content);
+    void viewSavedVehicles();
+};
+class Seller : public User
+{
+public:
+    double sellerRating;
+    int totalListings;
+    bool verifiedStatus;
+    int lisitngs[100];
+    double accountBalance;
+    // funcs
+    bool addListing(Vehicle v);
+    bool updateListing(int listingID);
+    bool deleteListing(int listingID);
+    bool respondToMessage(int messageID, string reply);
+};
+
+class Admin : public User
+{
+    int AdminLevel;
+    bool permissions;
+    int totalApprovedListings;
+    int reportsHandled;
+    string lastLogin;
+
+    // Functions:
+    bool approveListing();
+    bool removeListing();
+    bool banUser();
+    void generateReport();
+};
+// class 2
+class Vehicle
+{
+public:
+    int vehicleID;
+    string brand;
+    string model;
+    int year;
+    double mileage;
+    double price;
+    // func
+    void displayInfo();
+    void updatePrice(double newPrice);
+    double calcDeprication();
+    void matchSearch(string brand, double minPrice, double maxPrice);
+};
+class Car : public Vehicle
+{
+    string engineType;
+    string transmission;
+    double fuelType;
+    int doors;
+    string condition;
+
+    // func
+    void showSpecs();
+    double calcResaleValue();
+    bool isAutomatic(); // todo: bool
+    // void compareWith();
+};
+
+class Bike : public Vehicle
+{
+    string engineType;
+    string bikeType;
+    double fuelType;
+    double weight;
+    string condition;
+
+    // funcs
+    void showSpecs();
+    double estimateMileage();
+
+    // void compareWith();
+
+
+    8. Listing
+
+Data:
+
+listingID
+
+Vehicle (object)
+
+Seller (object)
+
+status (pending/approved)
+
+datePosted
+
+views
+
+Functions:
+
+postListing()
+
+updateListing()
+
+markSold()
+
+incrementViews()
+
+👉 COMPOSITION: Listing owns Vehicle
+👉 AGGREGATION: Listing references Seller
+
+9. Marketplace
+
+Data:
+
+listings (array of Listing)
+
+totalUsers
+
+totalListings
+
+platformName (const)
+
+commissionRate (const)
+
+Functions:
+
+searchVehicle()
+
+filterVehicle()
+
+addListing()
+
+removeListing()
+
+👉 Array of objects #1
+
+10. Message
+
+Data:
+
+messageID
+
+senderID
+
+receiverID
+
+content
+
+timestamp
+
+Functions:
+
+send()
+
+delete()
+
+markRead()
+
+displayMessage()
+
+👉 Used by Buyer ↔ Seller
+
+11. Review
+
+Data:
+
+reviewID
+
+rating
+
+comment
+
+reviewerID
+
+reviewedUserID
+
+Functions:
+
+addReview()
+
+editReview()
+
+deleteReview()
+
+displayReview()
+
+12. Favorites
+
+Data:
+
+favoriteID
+
+buyerID
+
+vehicleIDs (array)
+
+totalFavorites
+
+lastUpdated
+
+Functions:
+
+addFavorite()
+
+removeFavorite()
+
+clearFavorites()
+
+showFavorites()
+
+👉 Array of objects #2
+
+🧠 CONSTRUCTORS
+
+Use all three types or you lose marks:
+
+Default → empty objects (User, Vehicle)
+
+Parameterized → Listing, Vehicle, Message
+
+Copy → Vehicle, Listing (duplication / comparisons)
+
+You’ll explain:
+
+“Copy constructor used to duplicate listing data without modifying original object”
+
+🔒 CONSTANTS (5+)
+
+Examples:
+
+platformName (Marketplace)
+
+commissionRate (Marketplace)
+
+maxListingsPerSeller
+
+maxFavorites
+
+minAdminLevel
+
+Also:
+
+const functions → displayInfo(), showSpecs()
+
+const pointer → pointer to Vehicle in Listing
+
+📌 STATIC MEMBERS (2+)
+
+Examples:
+
+static totalUsers (User)
+
+static totalListings (Marketplace)
+
+Static functions:
+
+getTotalUsers()
+
+getTotalListings()
+
+Reason:
+
+Shared across all objects, not per-instance
+
+🔗 COMPOSITION & AGGREGATION (MANDATORY)
+Composition (strong ownership):
+
+Listing has a Vehicle
+
+Favorites has Vehicles list
+
+Aggregation (weak relationship):
+
+Seller has Listings
+
+Marketplace has Users/Listings
+
+📊 CLASS DIAGRAM (don’t screw this up)
+
+Your diagram MUST show:
+
+Inheritance arrows (User → Buyer/Seller/Admin)
+
+Composition (filled diamond)
+
+Aggregation (empty diamond)
+
+Methods + attributes
+
+
+
+
+
+
+
+    */
 
 /* //! COMPOSITION + ARRAY OF OBJECTS
 class Laptop
