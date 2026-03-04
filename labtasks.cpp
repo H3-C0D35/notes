@@ -1,8 +1,11 @@
 
 #define MAX_VEHICLES 100
+#define MAX_LISTING 100
 #include <iostream>
 #include <string>
-/*1user
+/*
+sellerListings[sellerCount++] = &marketplaceListings[index];
+1user
 2admin
 3buyer
 4seller
@@ -12,86 +15,7 @@
 8Inbox
 9favourites*/
 using namespace std;
-class Search
-{
-    Vehicle v;
 
-public:
-    Search() {}
-
-    void searchbyV(Vehicle v[], int count, int choice)
-    {
-        string b, m;
-        int y;
-        double ma, p;
-        Search s1;
-        switch (choice)
-        {
-        case 1:
-            cout << "Filter by brand name: ";
-            cin >> b;
-            for (int i = 0; i < count; i++)
-            {
-                if (v[i].getbrand() == b)
-                {
-                    v[i].showSpecs();
-                }
-            }
-            break;
-
-        case 2:
-            cout << "Filter by Model name: ";
-            cin >> m;
-            for (int i = 0; i < count; i++)
-            {
-                if (v[i].getmodel() == m)
-                {
-                    v[i].showSpecs();
-                }
-            }
-            break;
-
-        case 3:
-            cout << "Filter by year: ";
-            cin >> y;
-            for (int i = 0; i < count; i++)
-            {
-                if (v[i].getyear() == y)
-                {
-                    v[i].showSpecs();
-                }
-            }
-            break;
-
-        case 4:
-            cout << "Filter by price: ";
-            cin >> p;
-            for (int i = 0; i < count; i++)
-            {
-                if (v[i].getprice() == p)
-                {
-                    v[i].showSpecs();
-                }
-            }
-            break;
-
-        case 5:
-            cout << "Filter by Mileage: ";
-            cin >> ma;
-            for (int i = 0; i < count; i++)
-            {
-                if (v[i].getmileage() == ma)
-                {
-                    v[i].showSpecs();
-                }
-            }
-            break;
-        default:
-            cout << "INVALID!\n";
-            break;
-        }
-    }
-};
 class Vehicle
 {
     int vehicleID;
@@ -100,42 +24,36 @@ class Vehicle
     int year;
     double price;
     double mileage;
-    string isauto;
+    bool isauto;
 
 public:
     Vehicle() {}
-    Vehicle(int id, string brand, string model, int year, double price, double mileage) : vehicleID(id), brand(brand), model(model), year(year), price(price), mileage(mileage) {}
-    string getbrand()
+    Vehicle(int id, string brand, string model, int year, double price, double mileage, bool isauto) : vehicleID(id), brand(brand), model(model), year(year), price(price), mileage(mileage), isauto(isauto) {}
+    string getbrand() const
     {
         return brand;
     }
-    string getmodel()
+    string getmodel() const
     {
         return model;
     }
-    int getyear()
+    int getyear() const
     {
         return year;
     }
-    double getprice()
+    double getprice() const
     {
         return price;
     }
-    double getmileage()
+    void setprice(double p)
+    {
+        price = p;
+    }
+    double getmileage() const
     {
         return mileage;
     }
-    void isAutomatic()
-    {
-        if (price > 70000)
-        {
-            isauto = "YES";
-        }
-        else
-        {
-            isauto = "NO";
-        }
-    }
+
     void showSpecs()
     {
         cout << "\n-------DETAILS-------\n";
@@ -145,9 +63,7 @@ public:
         cout << "Year: " << year << endl;
         cout << "Price: " << price << endl;
         cout << "Mileage: " << mileage << endl;
-        cout << "AUTOMATIC: ";
-        isAutomatic();
-        cout << "\n";
+        cout << "AUTOMATIC: " << (isauto ? "YES" : "NO") << endl;
     }
 };
 
@@ -163,16 +79,24 @@ class Admin
 public:
     Admin(int adminlvl, bool perms, int TAL) : adminLevel(adminlvl), permissions(perms), totalApprovedListing(TAL) {}
 
-    bool approveListing(int listingID)
+    bool approveListing(Listing l[], int size, int listingID)
     {
-        cout << "Enter list ID: ";
-        cin >> listingID;
-        return true;
+        for (int i = 0; i < size; i++)
+        {
+            if (l[i].getListingID() == listingID)
+            {
+                if (l[i].getStatus() == "pending")
+                {
+                    l[i].setStatus("approved");
+                    totalApprovedListing++;
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     bool removeListing(int listingID)
     {
-        cout << "Enter list ID: ";
-        cin >> listingID;
         return true;
     }
     bool banUsers(int id)
@@ -182,24 +106,69 @@ public:
         return true;
     }
 };
+class Favourites
+{
+    Listing *favListings[20];
+    int favCount;
+
+public:
+    int getFavCount() const
+    {
+        return favCount;
+    }
+    Favourites()
+    {
+        favCount = 0;
+    }
+
+    bool addToFav(Listing &l)
+    {
+        if (favCount >= 20)
+            return false;
+
+        favListings[favCount++] = &l;
+        return true;
+    }
+
+    bool removeFromFav(int listingID)
+    {
+        for (int i = 0; i < favCount; i++)
+        {
+            if (favListings[i]->getListingID() == listingID)
+            {
+                for (int j = i; j < favCount - 1; j++)
+                    favListings[j] = favListings[j + 1];
+
+                favCount--;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void viewFavs()
+    {
+        for (int i = 0; i < favCount; i++)
+        {
+            favListings[i]->getvehicle().showSpecs();
+        }
+    }
+};
 class Buyer
 {
 
     double budget;
     bool sendmessage;
-    string savedVehicles[20];
+    Favourites fav;
 
 public:
-    Buyer(double budget, bool sendMessage, string savedV[20]) : budget(budget), sendmessage(sendMessage)
+    Buyer() {}
+    Buyer(double budget, bool sendMessage) : budget(budget), sendmessage(sendMessage) {}
+    Buyer(double b) : budget(b) {}
+
+    void viewSavedVehicles(int savecount)
     {
-        for (int i = 0; i < 20; i++)
-        {
-            savedVehicles[i] = savedV[i];
-        }
-    }
-    void viewSavedVehicles()
-    {
-        for (int i = 0; i < savedVehicles->length(); i++)
+        for (int i = 0; i < savecount; i++)
         {
             cout << "ID: "; // todo:  VEHICLE OBJ
             cout << "Name: ";
@@ -207,40 +176,93 @@ public:
     }
     void sendMessage(int sellerID, string message) // todo: MESSAGE OBJ
     {
-        cout << "Enter Seller ID: ";
-        cin >> sellerID;
-        cout << "MESSAGE: \n";
-        cin >> message;
     }
-    bool addtoFavs(int vehicleID) // todo VEHICLE OBJ
+    bool addtoFavs(Listing &l) // todo VEHICLE OBJ
     {
-        cout << "Enter Vehicle ID: ";
-        cin >> vehicleID;
-        if (vehicleID)
-        {
-            cout << "Added to Favs!\n";
-            return true;
-        }
-        else
-        {
-            cout << "Invalid vehicle ID.\n";
-            return false;
-        }
+        return fav.addToFav(l);
     }
-    bool remfromFavs(int vehicleID)
+    bool remfromFavs(int listingID)
     {
-        cout << "Enter Vehicle ID: ";
-        cin >> vehicleID;
-        if (vehicleID)
-        {
-            cout << "Removed to Favs!\n";
-            return true;
-        }
-        else
-        {
-            cout << "Invalid vehicle ID.\n";
+        return fav.removeFromFav(listingID);
+    }
+    void viewFavourites()
+    {
+        fav.viewFavs();
+    }
+};
+class Seller
+{
+    double sellerRating;
+    bool verifiedStatus;
+    double accountBalance;
+    Listing *sellerListings[50];
+    int listingCount;
+
+public:
+    Seller(double sellerRating, double accountBalance) : sellerRating(sellerRating), accountBalance(accountBalance)
+    {
+        listingCount = 0;
+        verifiedStatus = false;
+    }
+    bool addListing(Listing &l)
+    {
+        if (listingCount >= 50)
             return false;
+        sellerListings[listingCount] = &l;
+        listingCount++;
+        return true;
+    }
+    bool updateListing(int listingID)
+    {
+        for (int i = 0; i < listingCount; i++)
+        {
+
+            if (sellerListings[i]->getListingID() == listingID)
+            {
+                if (sellerListings[i]->getStatus() != "approved")
+                {
+                    cout << "Listing not approved yet.\n";
+                    return false;
+                }
+                double newPrice;
+                cout << "Enter new price: ";
+                cin >> newPrice;
+                sellerListings[i]->updateListing(newPrice);
+                return true;
+            }
         }
+        return false;
+    }
+    bool deleteListing(int listingID)
+    {
+        for (int i = 0; i < listingCount; i++)
+        {
+            if (sellerListings[i]->getListingID() == listingID)
+            {
+                for (int j = i; j < listingCount - 1; j++)
+                {
+                    sellerListings[j] = sellerListings[j + 1];
+                }
+                listingCount--;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool respondToMessage(User buyer[], int size, int buyerID, string reply)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            if (buyer[i].getUserID() == buyerID)
+            {
+                cout << "Message: " << reply << endl;
+                cout << "Reply sent to " << buyerID << endl;
+                return true;
+            }
+        }
+        cout << "Invalid buyer ID" << endl;
+        return false;
     }
 };
 class User
@@ -250,8 +272,12 @@ class User
     string role;
 
 public:
+    User() {}
     User(int id, int num, string name, string password, string role) : userID(id), userNumber(num), username(name), password(password), role(role) {};
-
+    int getUserID() const
+    {
+        return userID;
+    }
     void updateProfile()
     {
         int choice;
@@ -295,6 +321,249 @@ public:
     {
     }
 };
+class Listing
+{
+private:
+    int listingID;
+    Vehicle v;     // COMPOSITION
+    User *u;       // AGGREGATION
+    string status; // "pending", "approved", "sold"
+    string postedDate;
+
+public:
+    Listing() {}
+    Listing(int id, Vehicle v, User *u, string date) : listingID(id), v(v), u(u), postedDate(date) {}
+    Vehicle &getvehicle()
+    {
+        return v;
+    }
+    void publish()
+    {
+        if (status == "pending")
+        {
+            status = "approved";
+            cout << "Listing published successfully.\n";
+        }
+        else
+        {
+            cout << "Listing is already published or sold.\n";
+        }
+    }
+    void markSold()
+    {
+        if (status == "approved")
+        {
+            status = "sold";
+            cout << "Listing marked as sold.\n";
+        }
+        else
+        {
+            cout << "Listing cannot be marked as sold.\n";
+        }
+    }
+    void updateListing(double newprice)
+    {
+        v.setprice(newprice);
+        cout << "Listing price updated successfully.\n";
+    }
+
+    int getListingID() const
+    {
+        return listingID;
+    }
+    string getStatus() const
+    {
+        return status;
+    }
+    void setStatus(string s)
+    {
+        status = s;
+    }
+};
+class Company
+{
+    Listing listings[MAX_LISTING];
+    int listingCount;
+
+    User users[50];
+    int userCount;
+
+    Message messages[100];
+    int messageCount;
+
+public:
+    Company()
+    {
+        listingCount = 0;
+        userCount = 0;
+        messageCount = 0;
+    }
+
+    bool addListing(Listing &l)
+    {
+        if (listingCount >= MAX_LISTING)
+            return false;
+
+        listings[listingCount++] = l;
+        return true;
+    }
+
+    Listing *findListing(int listingID)
+    {
+        for (int i = 0; i < listingCount; i++)
+        {
+            if (listings[i].getListingID() == listingID)
+                return &listings[i];
+        }
+        return NULL;
+    }
+
+    bool sendMessage(int senderID, int receiverID, string text)
+    {
+        if (messageCount >= 100)
+            return false;
+
+        messages[messageCount++] = Message(messageCount, senderID, receiverID, text);
+        return true;
+    }
+
+    void viewMessages(int userID)
+    {
+        for (int i = 0; i < messageCount; i++)
+        {
+            if (messages[i].getReceiverID() == userID)
+            {
+                messages[i].display();
+            }
+        }
+    }
+
+    void showAllListings()
+    {
+        for (int i = 0; i < listingCount; i++)
+        {
+            listings[i].getvehicle().showSpecs();
+        }
+    }
+};
+/*Well u could add data member like search brand, model etc, then make extra function to
+use those data member for searching and add settee function to ask for input */
+class Search
+{
+
+    string searchbrand, searchmodel;
+    int year;
+    double price, mileage;
+
+public:
+    Search() {}
+
+    void searchbyV(Listing l[], int count, int choice)
+    {
+        string b, m;
+        int y;
+        double ma, p;
+        switch (choice)
+        {
+        case 1:
+            cout << "Filter by brand name: ";
+            cin >> b;
+            for (int i = 0; i < count; i++)
+            {
+                if (l[i].getvehicle().getbrand() == b)
+                {
+                    l[i].getvehicle().showSpecs();
+                }
+            }
+            break;
+
+        case 2:
+            cout << "Filter by Model name: ";
+            cin >> m;
+            for (int i = 0; i < count; i++)
+            {
+                if (l[i].getvehicle().getmodel() == m)
+                {
+                    l[i].getvehicle().showSpecs();
+                }
+            }
+            break;
+
+        case 3:
+            cout << "Filter by year: ";
+            cin >> y;
+            for (int i = 0; i < count; i++)
+            {
+                if (l[i].getvehicle().getyear() == y)
+                {
+                    l[i].getvehicle().showSpecs();
+                }
+            }
+            break;
+
+        case 4:
+            cout << "Filter by price: ";
+            cin >> p;
+            for (int i = 0; i < count; i++)
+            {
+                if (l[i].getvehicle().getprice() == p)
+                {
+                    l[i].getvehicle().showSpecs();
+                }
+            }
+            break;
+
+        case 5:
+            cout << "Filter by Mileage: ";
+            cin >> ma;
+            for (int i = 0; i < count; i++)
+            {
+                if (l[i].getvehicle().getmileage() == ma)
+                {
+                    l[i].getvehicle().showSpecs();
+                }
+            }
+            break;
+        default:
+            cout << "INVALID!\n";
+            break;
+        }
+    }
+};
+class Message
+{
+    int messageID;
+    int senderID;
+    int receiverID;
+    string content;
+
+public:
+    Message() {}
+
+    Message(int id, int sender, int receiver, string text)
+        : messageID(id), senderID(sender), receiverID(receiver), content(text) {}
+
+    int getMessageID() const
+    {
+        return messageID;
+    }
+    int getReceiverID() const
+    {
+        return receiverID;
+    }
+
+    int getSenderID() const
+    {
+        return senderID;
+    }
+
+    void display() const
+    {
+        cout << "From: " << senderID << " -> "
+             << "To: " << receiverID << endl;
+        cout << "Message: " << content << endl;
+    }
+};
 
 int main()
 {
@@ -312,14 +581,37 @@ int main()
     cin >> role;
     User u1(id, num, name, password, role);
 
-    int choice;
-
-    cout << "1.Brand\n2.Model\n3.Year\n4.Price\n5.Mileage\nHow do you wish to search vehicles by?: ";
-    cin >> choice;
     Vehicle v1[MAX_VEHICLES];
     int vehiCount = 0;
+    Listing listings[MAX_LISTING];
+    int listingCount = 0;
+    v1[vehiCount++] = Vehicle(1, "Toyota", "Corolla", 2020, 4500000, 30000, false);
+    v1[vehiCount++] = Vehicle(2, "Mercedes", "Benz", 2007, 6700000, 40000, true);
+    v1[vehiCount++] = Vehicle(3, "Bugatti", "Cheron", 2020, 1200000, 40000, true);
+    listings[listingCount++] = Listing(101, v1[0], &u1, "12/3/2026");
+    listings[listingCount++] = Listing(102, v1[1], &u1, "13/3/2026");
+
     Search s1;
-    s1.searchbyV(v1, vehiCount, choice);
+    Buyer b1;
+    if (role == "buyer")
+    {
+        int choice;
+        cout << "1.Search\n2.Add to Favs\n3.Send Message\n";
+        cin >> choice;
+        switch (choice)
+        {
+        case 1:
+            int choicetoSearch;
+            cout << "1.Brand\n2.Model\n3.Year\n4.Price\n5.Mileage\nHow do you wish to search vehicles by?: ";
+            cin >> choicetoSearch;
+            s1.searchbyV(listings, listingCount, choicetoSearch);
+            break;
+
+        case 2:;
+
+        case 3:
+        }
+    }
 }
 
 /*Design and implement a Car Marketplace System similar to PakWheels (www.pakwheels.com)
@@ -360,3 +652,43 @@ Your program should at least do the following:
 ■ Classes with their attributes & methods.
 ■ aggregation, and composition relationships.
 */
+
+/*if(role == "buyer")
+{
+    int choice;
+    cout << "1.Search\n2.Add to Favs\n3.Send Message\n";
+    cin >> choice;
+
+    if(choice == 1)
+    {
+        s1.searchbyV(listings, listingCount, filterChoice);
+    }
+    else if(choice == 2)
+    {
+        buyer.addtoFavs(vehicleID);
+    }
+    else
+    {
+        cout << "Invalid option.\n";
+    }
+}
+else if(role == "seller")
+{
+    int choice;
+    cout << "1.Add Listing\n2.Update\n3.Delete\n";
+    cin >> choice;
+
+    // seller functions here
+}
+else if(role == "admin")
+{
+    int choice;
+    cout << "1.Approve Listing\n2.Remove Listing\n";
+    cin >> choice;
+
+    // admin functions here
+}
+else
+{
+    cout << "Access denied.\n";
+}*/
