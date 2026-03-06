@@ -7,7 +7,7 @@ using namespace std;
 
 class Vehicle
 {
-    const int vehicleID;
+    int vehicleID;
     string brand;
     string model;
     int year;
@@ -101,31 +101,26 @@ public:
     {
         int choice;
         cout << "What do you want to change? \n";
-        cout << "1. ID\n2. Name: \n3. Number\n4. Password\n5. Role\nCHOICE: ";
+        cout << "1. Name: \n2. Number\n3. Password\n4. Role\nCHOICE: ";
         cin >> choice;
         switch (choice)
         {
         case 1:
-            cout << "Enter new ID: ";
-            cin >> userID;
-            break;
-
-        case 2:
             cout << "Enter new Name: ";
             cin >> username;
             break;
 
-        case 3:
+        case 2:
             cout << "Enter new number: ";
             cin >> userNumber;
             break;
 
-        case 4:
+        case 3:
             cout << "Enter new password: ";
             cin >> password;
             break;
 
-        case 5:
+        case 4:
             cout << "Enter new role: ";
             cin >> role;
             break;
@@ -140,7 +135,7 @@ int User::totalUsers = 0;
 class Listing
 {
 private:
-    const int listingID;
+    int listingID;
     Vehicle v;     // COMPOSITION
     User *u;       // AGGREGATION
     string status; // "pending", "approved", "sold"
@@ -251,6 +246,9 @@ class Favourites
 {
     Listing *favListings[20];
     int favCount;
+    int maxLimit;
+    string categoryName;
+    bool isPrivate;
 
 public:
     int getFavCount() const
@@ -301,6 +299,9 @@ class Buyer
 
     double budget;
     Favourites fav;
+    int totalPurchases;
+    string preferredBrand;
+    bool verifiedBuyer;
 
 public:
     Buyer() : budget(0) {}
@@ -322,6 +323,83 @@ public:
     void viewFavourites()
     {
         fav.viewFavs();
+    }
+};
+class Company
+{
+    const string companyName = "PAKWHEELS";
+
+    Listing *listings[MAX_LISTING];
+    int listingCount;
+
+    User users[50];
+    int userCount;
+
+    Message messages[100];
+    int messageCount;
+
+public:
+    Company()
+    {
+        listingCount = 0;
+        userCount = 0;
+        messageCount = 0;
+    }
+
+    bool addListing(Listing *l)
+    {
+        if (listingCount >= MAX_LISTING)
+            return false;
+
+        listings[listingCount++] = l;
+        return true;
+    }
+
+    Listing *findListing(int listingID)
+    {
+        for (int i = 0; i < listingCount; i++)
+        {
+            if (listings[i]->getListingID() == listingID)
+                return listings[i];
+        }
+        return NULL;
+    }
+
+    bool sendMessage(int senderID, int receiverID, string text)
+    {
+        if (messageCount >= 100)
+            return false;
+
+        messages[messageCount++] = Message(messageCount, senderID, receiverID, text);
+        return true;
+    }
+
+    void viewMessages(int userID)
+    {
+        for (int i = 0; i < messageCount; i++)
+        {
+            if (messages[i].getReceiverID() == userID)
+            {
+                messages[i].display();
+            }
+        }
+    }
+
+    void showAllListings() const
+    {
+        for (int i = 0; i < listingCount; i++)
+        {
+            listings[i]->getvehicle().showSpecs();
+        }
+    }
+    Listing *getListings()
+    {
+        return *listings;
+    }
+
+    int getListingCount() const
+    {
+        return listingCount;
     }
 };
 class Seller
@@ -392,29 +470,37 @@ class Admin
     int adminLevel;
     bool permissions;
     int totalApprovedListing;
+    string adminName;
+    int yearsOfService;
+    bool superAdmin;
 
 public:
     Admin(int adminlvl, bool perms, int TAL) : adminLevel(adminlvl), permissions(perms), totalApprovedListing(TAL) {}
 
-    bool approveListing(Listing l[], int size, int listingID)
+    bool approveListing(Company &c, int listingID)
     {
-        for (int i = 0; i < size; i++)
+        Listing *l = c.findListing(listingID);
+
+        if (l && l->getStatus() == "pending")
         {
-            if (l[i].getListingID() == listingID)
-            {
-                if (l[i].getStatus() == "pending")
-                {
-                    l[i].setStatus("approved");
-                    totalApprovedListing++;
-                    return true;
-                }
-            }
+            l->setStatus("approved");
+            totalApprovedListing++;
+            return true;
         }
+
         return false;
     }
-    bool removeListing(int listingID)
+    bool removeListing(Company &c, int listingID)
     {
-        return true;
+        Listing *l = c.findListing(listingID);
+
+        if (l)
+        {
+            l->setStatus("removed");
+            return true;
+        }
+
+        return false;
     }
 
     bool banUsers(User users[], int size, int id)
@@ -431,83 +517,6 @@ public:
     }
 };
 
-class Company
-{
-    const string companyName = "PAKWHEELS";
-
-    Listing listings[MAX_LISTING];
-    int listingCount;
-
-    User users[50];
-    int userCount;
-
-    Message messages[100];
-    int messageCount;
-
-public:
-    Company()
-    {
-        listingCount = 0;
-        userCount = 0;
-        messageCount = 0;
-    }
-
-    bool addListing(Listing &l)
-    {
-        if (listingCount >= MAX_LISTING)
-            return false;
-
-        listings[listingCount++] = l;
-        return true;
-    }
-
-    Listing *findListing(int listingID)
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-            if (listings[i].getListingID() == listingID)
-                return &listings[i];
-        }
-        return NULL;
-    }
-
-    bool sendMessage(int senderID, int receiverID, string text)
-    {
-        if (messageCount >= 100)
-            return false;
-
-        messages[messageCount++] = Message(messageCount, senderID, receiverID, text);
-        return true;
-    }
-
-    void viewMessages(int userID)
-    {
-        for (int i = 0; i < messageCount; i++)
-        {
-            if (messages[i].getReceiverID() == userID)
-            {
-                messages[i].display();
-            }
-        }
-    }
-
-    void showAllListings() const
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-            listings[i].getvehicle().showSpecs();
-        }
-    }
-    Listing *getAllListings()
-    {
-        return listings;
-    }
-
-    int getListingCount() const
-    {
-        return listingCount;
-    }
-};
 class Search
 {
 public:
@@ -585,23 +594,20 @@ int main()
 
     User u1(id, num, name, password, role);
 
-    // System controller
     Company company;
 
     // Vehicles
-    Vehicle vehicles[MAX_VEHICLES];
-    int vehiCount = 0;
 
-    vehicles[vehiCount++] = Vehicle(1, "Toyota", "Corolla", 2020, 4500000, 30000, false);
-    vehicles[vehiCount++] = Vehicle(2, "Mercedes", "Benz", 2007, 6700000, 40000, true);
-    vehicles[vehiCount++] = Vehicle(3, "Bugatti", "Cheron", 2020, 1200000, 40000, true);
-
+    Vehicle v1(1, "Toyota", "Corolla", 2020, 4500000, 30000, false);
+    Vehicle v2(2, "Mercedes", "Benz", 2020, 7600000, 40000, true);
+    Vehicle v3(3, "Toyota", "Alto", 1999, 200000, 10000, false);
     // Listings
-    Listing l1(101, vehicles[0], &u1, "12/3/2026");
-    Listing l2(102, vehicles[1], &u1, "13/3/2026");
+    Seller s1(4.5, 100000);
+    Listing l1(101, v1, &u1, "12/3/2026");
+    Listing l2(102, v2, &u1, "13/3/2026");
 
-    company.addListing(l1);
-    company.addListing(l2);
+    company.addListing(&l1);
+    company.addListing(&l2);
 
     Buyer buyerObj(5000000);
     Seller sellerObj(4.5, 100000);
@@ -637,7 +643,7 @@ int main()
                     string brand;
                     cout << "Enter brand: ";
                     cin >> brand;
-                    Search::searchByBrand(company.findListing(101) ? &l1 : &l1, 2, brand);
+                    Search::searchByBrand(company.getListings(), company.getListingCount(), brand);
                     break;
                 }
                 case 2:
@@ -645,7 +651,7 @@ int main()
                     string model;
                     cout << "Enter model: ";
                     cin >> model;
-                    Search::searchByModel(&l1, 2, model);
+                    Search::searchByModel(company.getListings(), company.getListingCount(), model);
                     break;
                 }
                 case 3:
@@ -653,7 +659,7 @@ int main()
                     int year;
                     cout << "Enter year: ";
                     cin >> year;
-                    Search::searchByYear(&l1, 2, year);
+                    Search::searchByYear(company.getListings(), company.getListingCount(), year);
                     break;
                 }
                 case 4:
@@ -661,7 +667,7 @@ int main()
                     double price;
                     cout << "Enter max price: ";
                     cin >> price;
-                    Search::searchByPrice(&l1, 2, price);
+                    Search::searchByPrice(company.getListings(), company.getListingCount(), price);
                     break;
                 }
                 case 5:
@@ -669,7 +675,7 @@ int main()
                     double mileage;
                     cout << "Enter max mileage: ";
                     cin >> mileage;
-                    Search::searchByMileage(&l1, 2, mileage);
+                    Search::searchByMileage(company.getListings(), company.getListingCount(), mileage);
                     break;
                 }
                 }
@@ -749,42 +755,8 @@ int main()
     } while (choice != 5);
 
     cout << "Exiting system.\n";
+
+    cout << "Total Users: " << User::getTotalUsers() << endl;
+    cout << "Total Listings: " << Listing::getTotalListings() << endl;
     return 0;
 }
-
-/*Design and implement a Car Marketplace System similar to PakWheels (www.pakwheels.com)
-using Object-Oriented Programming principles. The assignment is intended to assess your
-understanding and application of classes, polymorphism, aggregation, composition, constructors,
-constants, static members, and arrays of objects.
-Requirements
-1. Classes: 5 marks
-○ Identify at least 10 classes
-○ Each class must have 5–6 data members
-○ Each class must have 4 member functions other than getters and setters
-2. Constructors, setters and getters: 3 marks
-○ Use default, parameterized, and copy constructors wherever it makes sense
-○ Explain why you used a particular constructor for that class
-○ You may use constructor overloading if necessary with proper reasoning
-○ Use setters and getters wherever necessary, for private data members.
-3. Constants & Constant Functions: 2 marks
-○ Use at least five constant data members, constant pointer, and constant function in your program
-4. Static Members: 2 marks
-○ Use at least two static data member and static member function
-○ Explain why you made it static
-5. Composition & Aggregation: 5 marks
-○ You must identify and implement at least 2 composition and 2 aggregation
-relationship
-6. Array of Objects: 5 marks
-○ Use array of objects for at least two classes
-7. Functionality: 12 marks
-Your program should at least do the following:
-○ Add, update, delete vehicle listings.
-○ Search and filter vehicles by attributes (brand, model, price, year, mileage).
-○ Buyer can save favorites.
-○ Buyer can send messages to Seller.
-○ Admin can approve/remove listings.
-8. Class Diagram: 6 marks
-○ Draw a proper class diagram showing:
-■ Classes with their attributes & methods.
-■ aggregation, and composition relationships.
-*/
