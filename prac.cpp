@@ -1,8 +1,11 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <cstring>
 using namespace std;
-
+int main()
+{
+}
 /* //! ARRAY OF OBJECTS
  *Can be initialized in two ways:
  *----without default constructor----
@@ -733,78 +736,188 @@ int main() {
 */
 
 /* //! INHERITANCE
-?A company has employees. Create a base class Employee with name and salary.
-?Create a derived class Manager that adds department and a function
-?displayManager() toshow all details. Task: Create a Manager object and display all
-?details using the  functions.
+*THERE ARE TYPES OF INHERITANCE: *SINGLE
+*MULTIPLE : where one parent has a child who has another child.
+*MULTILEVEL : where one child has more than one parent
 
+class VehicleInfo //*PARENT 1
+{
+public:
+    int vehicleID;
+    string model;
+    VehicleInfo() {}
+    VehicleInfo(int id, string model) : vehicleID(id), model(model) {}
+};
+class RentalInfo //*PARENT 2
+{
+public:
+    double rentalPricePerDay;
+    string status;
+    RentalInfo() {}
+    RentalInfo(string status) : rentalPricePerDay(30.5),
+status(status) {}
+};
 
-class Employee
+class RentalVehicle : public VehicleInfo, public RentalInfo //*CHILD
+{
+public:
+
+    int days;
+    RentalVehicle(int id, string model, string status, int days) :
+VehicleInfo(id, model), RentalInfo(status), days(days) {}
+    double totalCost()
+    {
+        return days * rentalPricePerDay;
+    }
+    void display()
+    {
+        cout << "-----DETAILS-----" << endl;
+        cout << "VEHICLE ID: " << vehicleID << endl
+             << "MODEL: " << model << endl
+             << "STATUS: " << status << endl
+             << "TOTAL COST: " << totalCost();
+    }
+};
+int main()
+{
+    RentalVehicle r1(432, "Corolla", "available", 7);
+    r1.totalCost();
+    r1.display();
+    return 0;
+}
+
+*HIERARCHICAL: where one parent has many children
+class Staff
+{
+public:
+    int staffID;
+    string name;
+    double baseSalary;
+public:
+    Staff(int id, string n, double bs)
+        : staffID(id), name(n), baseSalary(bs) {}
+    double CalculateBaseSalary()
+    {
+        return baseSalary + 2000;
+    }
+    void DisplayDetails()
+    {
+        cout &lt;&lt; &quot;Staff ID: &quot; &lt;&lt; staffID &lt;&lt; endl;
+        cout &lt;&lt; &quot;Name: &quot; &lt;&lt; name &lt;&lt; endl;
+        cout &lt;&lt; &quot;Base Salary with Allowance: &quot; &lt;&lt;
+CalculateBaseSalary() &lt;&lt; endl;
+    }
+};
+class Driver : public Staff
+{
+private:
+    int tripsCompleted;
+public:
+    Driver(int id, string n, double bs, int trips)
+        : Staff(id, n, bs), tripsCompleted(trips) {}
+    double CalculateBonus()
+    {
+        return tripsCompleted * 500;
+    }
+    void DisplayDetails()
+
+    {
+        Staff::DisplayDetails();
+        cout &lt;&lt; &quot;Trips Completed: &quot; &lt;&lt; tripsCompleted &lt;&lt; endl;
+        cout &lt;&lt; &quot;Bonus: &quot; &lt;&lt; CalculateBonus() &lt;&lt; endl;
+        cout &lt;&lt; &quot;Total Salary: &quot; &lt;&lt; CalculateBaseSalary() +
+CalculateBonus() &lt;&lt; endl;
+    }
+};
+class Loader : public Staff
+{
+private:
+    int itemsHandled;
+public:
+    Loader(int id, string n, double bs, int items)
+        : Staff(id, n, bs), itemsHandled(items) {}
+    double CalculateBonus()
+    {
+        return itemsHandled * 200;
+    }
+    void DisplayDetails()
+    {
+        Staff::DisplayDetails();
+        cout &lt;&lt; &quot;Items Handled: &quot; &lt;&lt; itemsHandled &lt;&lt; endl;
+        cout &lt;&lt; &quot;Bonus: &quot; &lt;&lt; CalculateBonus() &lt;&lt; endl;
+        cout &lt;&lt; &quot;Total Salary: &quot; &lt;&lt; CalculateBaseSalary() +
+CalculateBonus() &lt;&lt; endl;
+    }
+};
+int main()
+{
+    Driver driver1(101, &quot;Alice&quot;, 30000, 10);
+    Loader loader1(102, &quot;Bob&quot;, 25000, 50);
+    cout &lt;&lt; &quot;Driver Details:&quot; &lt;&lt; endl;
+
+    driver1.DisplayDetails();
+    cout &lt;&lt; endl;
+    cout &lt;&lt; &quot;Loader Details:&quot; &lt;&lt; endl;
+    loader1.DisplayDetails();
+    return 0;
+}
+
+*HYBRID : inbreeding
+*TO PREVENT AMBIGUITY WITHOUT USING VIRTUAL, USE SCOPE RESOLUTION
+*EXAMPLE -->
+
+class Animal
 {
 public:
     string name;
-    double salary;
+    Animal() {}
+    Animal(string name) : name(name) {}
+    void describe()
+    {
+        cout << "I am " << name << endl;
+    }
 };
-class Manager : public Employee
+class FlyingCreature : public Animal
+{
+
+public:
+    int max_Altitude;
+    FlyingCreature() {}
+    FlyingCreature(string n1, int max) : Animal(n1), max_Altitude(max) {}
+    void fly()
+    {
+        cout << "The max altitude is: " << max_Altitude << endl;
+    }
+};
+class SwimCreature : public Animal
 {
 public:
-    string department;
-    void display()
+    int max_depth;
+    SwimCreature() {}
+    SwimCreature(string n1, int max) : Animal(n1), max_depth(max) {}
+    void swim()
     {
-        cout << "\n\n-------INFORMATION:-------\n";
-        cout << "\tName: " << name << endl;
-        cout << "\tSalary: " << salary << endl;
-        cout << "\tDepartment: " << department << endl;
+        cout << "The max depth is: " << max_depth << endl;
     }
 };
 
-int main()
-{
-    Manager m;
-
-    cout << "Enter your name: ";
-    cin >> m.name;
-    cout << "Enter your salary: ";
-    cin >> m.salary;
-    cout << "Enter your department: ";
-    cin >> m.department;
-    m.display();
-
-    return 0;
-}*/
-
-/* //! INHERITANCE
-?Create a derived class Car that adds a variable fuelType and a function showCarInfo()
-?to display all details. Task: Create a Car object, set all values, and call both functions.
-
-* SYNTAX FOR CREATING DERIVED CLASS:
-* class class_name{
-*public: };
-* class class_name2 : public class_name{
-* public: }
-
-class A
+class Duck : public FlyingCreature, public SwimCreature
 {
 public:
-};
-
-class Car : public A
-{
-public:
-    char fueltype;
-    void carinfo()
-    {
-        cout << "fuel type: " << fueltype << endl;
-    }
+    Duck() {}
+    Duck(string n1, string n2, int maxA, int maxD) : FlyingCreature(n1, maxA), SwimCreature(n2, maxD) {}
 };
 int main()
 {
-    Car c;
-    cout << "Enter fuel type: ";
-    cin >> c.fueltype;
-    c.carinfo();
-    return 0;
-}*/
+    Duck d("Sparrow", "Duck", 45, 56);
+    d.FlyingCreature::describe();
+    d.fly();
+    d.SwimCreature::describe();
+    d.swim();
+}
+
+*DIAMOND PROBLEM:
+
 
 /* //! DMA
 ! syntax for DMA --> pointer_name = new return_type 'or' return_type[size];
