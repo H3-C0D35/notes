@@ -3,9 +3,566 @@
 #include <cmath>
 #include <cstring>
 using namespace std;
+
+/*//! JIST OF INHERITANCE CONCEPTS + POLYMORPHISM
+class Device
+{
+    string device_ID;
+    string status;
+
+public:
+    Device() : device_ID(""), status("OFF") {} //* Better way to do default constructors
+    Device(string id, string status) : device_ID(id), status(status) {}
+    string getid()
+    {
+        return device_ID;
+    }
+    string getStatus()
+    {
+        return status;
+    }
+    //*virtual will be used not just with class names but also parent class's member functions
+    virtual void turnOn()
+    {
+        status = "ON";
+        cout << "Device " << device_ID << " has been turned on.\n";
+    }
+    virtual void turnOf()
+    {
+        status = "OFF";
+        cout << "Device " << device_ID << " has been turned off.\n";
+    }
+};
+class Light : public virtual Device
+{
+public:
+    int brightness;
+    Light() : Device(), brightness(100) {}
+    Light(string id, string status) : Device(id, status), brightness(100) {}
+    void dim(int n)
+    {
+        if (n <= brightness)
+        {
+            brightness -= n;
+            cout << "Light" << getid() << " has been dimmed to " << brightness << endl;
+        }
+        else if (n < 0)
+        {
+            brightness = 0;
+        }
+        else
+        {
+            cout << "Not a valid number.\n";
+        }
+    }
+};
+class Camera : public virtual Device
+{
+public:
+    bool isRecording;
+    Camera() : Device(), isRecording(false) {}
+    Camera(string id, string status) : Device(id, status), isRecording(false) {}
+    void StartRecording()
+    {
+        isRecording = true;
+        cout << "Camera " << getid() << " started recording.\n";
+    }
+};
+
+class Thermostat : public Light, public Camera
+{
+public:
+    int temperature;
+    Thermostat() : Device(), temperature(20) {}
+    Thermostat(string id, string status) : Device(id, status), Light(id, status), Camera(id, status), temperature(20) {}
+    void setTemperature(int t)
+    {
+        temperature = t;
+        cout << "Temperature set to " << temperature << endl;
+    }
+};
+
+class Routine
+{
+public:
+    static const int MDEVICES = 10;
+    string routinID;
+    string name;
+    int deviCount = 0;
+    Device *d[MDEVICES];
+
+    void addDevice(Device *dev) // adding one device
+    {
+        if (deviCount < MDEVICES)
+        {
+            d[deviCount++] = dev;
+            cout << "Device added successfully.\n";
+        }
+        else
+            cout << "Not enough space.\n";
+    }
+
+    void addDevices(Device *dev[], int count) // adding multiple devices
+    {
+        if (deviCount + count < MDEVICES)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                d[deviCount++] = dev[i];
+            }
+            cout << "Device added successfully.\n";
+        }
+        else
+            cout << "Not enough space.\n";
+    }
+    void execute()
+    {
+        cout << "Executing devices of routine" << name << endl;
+        for (int i = 0; i < deviCount; i++)
+        {
+            d[i]->turnOn();
+        }
+    }
+};
+class Homeowner
+{
+public:
+    static const int MROUTINE = 20;
+    string homeownerID;
+    string name;
+    int routineCount = 0;
+    Routine *routine[MROUTINE];
+
+    void createRoutine(Routine *r)
+    {
+        if (routineCount < MROUTINE)
+        {
+            routine[routineCount++] = r;
+            cout << "Routine " << name << " created.\n";
+        }
+        else
+            cout << "No space to create new routine.\n";
+    }
+};
+
 int main()
 {
+    Light L("L1", "OFF");
+    Camera C("C1", "OFF");
+    Thermostat T("T1", "OFF");
+    L.turnOn();
+    L.dim(30);
+    C.StartRecording();
+    T.setTemperature(22);
+    Homeowner H;
+    Routine R;
+    R.name = "Morning Mode";
+    R.routinID = "R1";
+    Device *D[] = {&L, &C, &T};
+    R.addDevices(D, 3);
+    H.createRoutine(&R);
+    R.execute();
+    return 0;
 }
+//! ══════════════════════════════THEORY═════════════════════════════════
+
+/* //! LINE ____
+*Both Light and Camera inherit from Device. If Thermostat inherits from both, we get two copies of Device inside Thermostat — ambiguity on every function call.
+*The fix is virtual inheritance on both Light and Camera — which we already have. That tells the compiler: merge the two Device subobjects into one.
+*So the correct structure is:
+class Light : public virtual Device { ... };
+class Camera : public virtual Device { ... };
+class Thermostat : public Light, public Camera { ... };
+*And Thermostat's constructor "must explicitly call Device()" because with virtual inheritance, the most-derived class is responsible for constructing the virtual base.
+! SIMPLER WAY TO DO IT
+* we can directly do "class Thermostat : public Device" and remove the "virtual keyword" from class Light and Camera.
+*This means no diamond problem, hence, no virtual inheritance needed. But it also means we cannot directly access Light and Camera member functions in Thermostat.
+*We would have to add them directly using composition.
+class Thermostat : public Device {
+public:
+    Light light;
+    Camera camera;
+    int temperature;
+
+    Thermostat(string id, string s) : Device(id, s), light(id, s), camera(id, s), temperature(20) {}
+
+    void dim(int n)           { light.dim(n); }
+    void startRecording()     { camera.startRecording(); }
+    void setTemperature(int t) {
+        temperature = t;
+        cout << "Thermostat " << getID() << " set to " << temperature << "°C\n";
+    }
+};
+*This goes against our actual program.
+
+!------POINTER WORKINGS
+*A derived object(taking example of Device(base) and Light(derived)) looks like this:
+*Light :
+┌───────────┬────────┬────────────┐
+│ device_ID │ status │ brightness │
+└───────────┴────────┴────────────┘
+
+*and Device looks like this:
+┌───────────┬────────┐
+│ device_ID │ status │
+└───────────┴────────┘
+*  now when we do
+Light L; Device d = L;
+*brightness "slices" up and data is lost as there is physically no space for Device to hold any more than 2 data members of Light.
+
+!THIS IS WHEN POINTERS COME INTO PLAY
+*no copy = no slice || and this is exactly what pointers do as they copy nothing, merely store the address / point to the address
+Device *d = &L;
+d ───────────────►┌───────────┬────────┬────────────┐
+                  │ device_ID │ status │ brightness │
+                  └───────────┴────────┴────────────┘
+
+*pass by value is the same problem therefore we use pass by pointer or pass by reference
+!PASS BY POINTER
+void addDevice(Device *dev) {   //* dev is just an address
+    devices[count++] = dev;
+}
+addDevice(&L);   // passes address of L, nothing copied
+
+*Memory:
+Light L:
+┌───────────┬────────┬────────────┐
+│ device_ID │ status │ brightness │
+└───────────┴────────┴────────────┘
+                ▲
+                │
+dev ────────────┘   //*(just holds address, no copy made)
+
+!PASS BY REFERENCE
+void addDevice(Device &dev) {   //* dev is an alias for whatever you pass
+    dev.turnOn();
+}
+
+addDevice(L);   //* no copy, dev IS L, just a different name for it
+
+*Memory:
+L (original):
+┌───────────┬────────┬────────────┐
+│ device_ID │ status │ brightness │
+└───────────┴────────┴────────────┘
+    ▲
+    │
+dev ┘   //*(alias — same memory location, not a new box)
+
+!The one rule:
+────────────────────────────────────────────
+│     JOB     │ Value │ Pointer │ Reference │
+│─────────────│───────│─────────│───────────│
+│Copies       │   YES │   NO    │    NO     │
+│Slice risk   │   YES │   NO    │    NO     │
+│Modifies orig│   NO  │   YES   │    YES    │
+────────────────────────────────────────────
+
+! ═══════════════════════════════════════════════════════════════
+!         DEVICE POINTER / ARRAY — COMPLETE REFERENCE
+! ═══════════════════════════════════════════════════════════════
+
+! ─────────────────────────────────────────────────────────────
+! 1. Device *d — pointer to one object OR dynamic array
+!    USE WHEN: size unknown at compile time, heap allocation needed
+! ─────────────────────────────────────────────────────────────
+
+? INITIALIZATION
+Device *d = new Device("D1", "OFF");  // single object on heap
+Device *d = new Device[10];           // dynamic array on heap
+Device *d = &L;                       // point to existing object
+
+? ACCESS — single object
+d->turnOn();                          // arrow for pointer
+d->getID();
+(*d).turnOn();                        // same as above, uglier
+
+? ACCESS — dynamic array
+d[0].turnOn();                        // dot — d[i] gives the object, not pointer
+d[1].getID();
+
+? PASSING TO FUNCTION
+void foo(Device *d);
+foo(d);                               // pass directly
+
+? CLEANUP
+delete d;                             // single object
+delete[] d;                           // dynamic array
+
+
+
+! ─────────────────────────────────────────────────────────────
+! 2. Device d[10] — stack array of objects
+!    USE WHEN: size fixed at compile time, no polymorphism needed
+! ─────────────────────────────────────────────────────────────
+
+? INITIALIZATION
+Device d[3];                                             // default constructors called
+Device d[3] = {Device("D1","OFF"), Device("D2","OFF")}; // explicit init
+
+? ACCESS — always dot, d[i] is the object directly
+d[0].turnOn();
+d[1].getID();
+
+? PASSING TO FUNCTION
+void foo(Device d[], int size);
+void foo(Device *d,  int size);  // identical to compiler — array decays to pointer
+foo(d, 3);
+
+? CLEANUP — none, lives on stack, dies when scope ends
+
+
+
+! ─────────────────────────────────────────────────────────────
+! 3. Device *d[10] — array of pointers
+!    USE WHEN: polymorphism needed (Light, Camera, Thermostat as Device*)
+! ─────────────────────────────────────────────────────────────
+
+? INITIALIZATION
+Device *d[10];       // 10 pointer slots, uninitialized
+Device *d[10] = {};  // all slots set to nullptr (safe)
+
+? POINT TO EXISTING OBJECTS
+Light  L("L1", "OFF");
+Camera C("C1", "OFF");
+d[0] = &L;
+d[1] = &C;
+
+? OR HEAP ALLOCATE EACH SLOT
+d[0] = new Light("L1",  "OFF");
+d[1] = new Camera("C1", "OFF");
+
+? ACCESS — arrow because each element IS a pointer
+d[0]->turnOn();
+d[1]->getID();
+
+? PASSING TO FUNCTION
+void foo(Device *d[], int size);
+void foo(Device **d,  int size);  // identical to compiler
+foo(d, 3);
+
+? CLEANUP — if heap allocated
+for (int i = 0; i < 3; i++)
+    delete d[i];
+
+
+
+! ─────────────────────────────────────────────────────────────
+! SIDE BY SIDE
+! ─────────────────────────────────────────────────────────────
+
+  ┌────────────────┬────────────────┬─────────────────┬──────────────────────────────────┐
+  │                │   Device *d    │   Device d[10]  │         Device *d[10]            │
+  ├────────────────┼────────────────┼─────────────────┼──────────────────────────────────┤
+  │ Lives on       │ heap (usually) │ stack           │ stack (ptrs), heap (objects)     │
+  │ Access syntax  │ d-> or d[i].   │ d[i].           │ d[i]->                           │
+  │ Polymorphism   │ yes            │ no              │ yes                              │
+  │ Needs delete   │ yes (if new)   │ no              │ yes (if new)                     │
+  │ Function param │ Device *d      │ Device *d       │ Device **d  or  Device *d[]      │
+  └────────────────┴────────────────┴─────────────────┴──────────────────────────────────┘
+
+! ─────────────────────────────────────────────────────────────
+! THE ONE RULE
+*thing you have IS a pointer  →  use  ->
+*thing you have IS an object  →  use  .
+*/
+
+/* //! INHERITANCE
+*THERE ARE TYPES OF INHERITANCE: *SINGLE
+*MULTIPLE : where one parent has a child who has another child.
+*MULTILEVEL : where one child has more than one parent
+
+class VehicleInfo //*PARENT 1
+{
+public:
+    int vehicleID;
+    string model;
+    VehicleInfo() {}
+    VehicleInfo(int id, string model) : vehicleID(id), model(model) {}
+};
+class RentalInfo //*PARENT 2
+{
+public:
+    double rentalPricePerDay;
+    string status;
+    RentalInfo() {}
+    RentalInfo(string status) : rentalPricePerDay(30.5),
+status(status) {}
+};
+
+class RentalVehicle : public VehicleInfo, public RentalInfo //*CHILD
+{
+public:
+
+    int days;
+    RentalVehicle(int id, string model, string status, int days) :
+VehicleInfo(id, model), RentalInfo(status), days(days) {}
+    double totalCost()
+    {
+        return days * rentalPricePerDay;
+    }
+    void display()
+    {
+        cout << "-----DETAILS-----" << endl;
+        cout << "VEHICLE ID: " << vehicleID << endl
+             << "MODEL: " << model << endl
+             << "STATUS: " << status << endl
+             << "TOTAL COST: " << totalCost();
+    }
+};
+int main()
+{
+    RentalVehicle r1(432, "Corolla", "available", 7);
+    r1.totalCost();
+    r1.display();
+    return 0;
+}
+
+*HIERARCHICAL: where one parent has many children
+class Staff
+{
+public:
+    int staffID;
+    string name;
+    double baseSalary;
+public:
+    Staff(int id, string n, double bs)
+        : staffID(id), name(n), baseSalary(bs) {}
+    double CalculateBaseSalary()
+    {
+        return baseSalary + 2000;
+    }
+    void DisplayDetails()
+    {
+        cout &lt;&lt; &quot;Staff ID: &quot; &lt;&lt; staffID &lt;&lt; endl;
+        cout &lt;&lt; &quot;Name: &quot; &lt;&lt; name &lt;&lt; endl;
+        cout &lt;&lt; &quot;Base Salary with Allowance: &quot; &lt;&lt;
+CalculateBaseSalary() &lt;&lt; endl;
+    }
+};
+class Driver : public Staff
+{
+private:
+    int tripsCompleted;
+public:
+    Driver(int id, string n, double bs, int trips)
+        : Staff(id, n, bs), tripsCompleted(trips) {}
+    double CalculateBonus()
+    {
+        return tripsCompleted * 500;
+    }
+    void DisplayDetails()
+
+    {
+        Staff::DisplayDetails();
+        cout &lt;&lt; &quot;Trips Completed: &quot; &lt;&lt; tripsCompleted &lt;&lt; endl;
+        cout &lt;&lt; &quot;Bonus: &quot; &lt;&lt; CalculateBonus() &lt;&lt; endl;
+        cout &lt;&lt; &quot;Total Salary: &quot; &lt;&lt; CalculateBaseSalary() +
+CalculateBonus() &lt;&lt; endl;
+    }
+};
+class Loader : public Staff
+{
+private:
+    int itemsHandled;
+public:
+    Loader(int id, string n, double bs, int items)
+        : Staff(id, n, bs), itemsHandled(items) {}
+    double CalculateBonus()
+    {
+        return itemsHandled * 200;
+    }
+    void DisplayDetails()
+    {
+        Staff::DisplayDetails();
+        cout &lt;&lt; &quot;Items Handled: &quot; &lt;&lt; itemsHandled &lt;&lt; endl;
+        cout &lt;&lt; &quot;Bonus: &quot; &lt;&lt; CalculateBonus() &lt;&lt; endl;
+        cout &lt;&lt; &quot;Total Salary: &quot; &lt;&lt; CalculateBaseSalary() +
+CalculateBonus() &lt;&lt; endl;
+    }
+};
+int main()
+{
+    Driver driver1(101, &quot;Alice&quot;, 30000, 10);
+    Loader loader1(102, &quot;Bob&quot;, 25000, 50);
+    cout &lt;&lt; &quot;Driver Details:&quot; &lt;&lt; endl;
+
+    driver1.DisplayDetails();
+    cout &lt;&lt; endl;
+    cout &lt;&lt; &quot;Loader Details:&quot; &lt;&lt; endl;
+    loader1.DisplayDetails();
+    return 0;
+}
+
+*HYBRID : inbreeding
+*TO PREVENT AMBIGUITY WITHOUT USING VIRTUAL, USE SCOPE RESOLUTION
+*EXAMPLE -->
+
+class Animal
+{
+public:
+    string name;
+    Animal() {}
+    Animal(string name) : name(name) {}
+    void describe()
+    {
+        cout << "I am " << name << endl;
+    }
+};
+class FlyingCreature : public Animal
+{
+
+public:
+    int max_Altitude;
+    FlyingCreature() {}
+    FlyingCreature(string n1, int max) : Animal(n1), max_Altitude(max) {}
+    void fly()
+    {
+        cout << "The max altitude is: " << max_Altitude << endl;
+    }
+};
+class SwimCreature : public Animal
+{
+public:
+    int max_depth;
+    SwimCreature() {}
+    SwimCreature(string n1, int max) : Animal(n1), max_depth(max) {}
+    void swim()
+    {
+        cout << "The max depth is: " << max_depth << endl;
+    }
+};
+
+class Duck : public FlyingCreature, public SwimCreature
+{
+public:
+    Duck() {}
+    Duck(string n1, string n2, int maxA, int maxD) : FlyingCreature(n1, maxA), SwimCreature(n2, maxD) {}
+};
+int main()
+{
+    Duck d("Sparrow", "Duck", 45, 56);
+    d.FlyingCreature::describe();
+    d.fly();
+    d.SwimCreature::describe();
+    d.swim();
+}
+
+*DIAMOND PROBLEM:
+
+!virtual in inheritance:
+class Light : public virtual Device {};
+*This is about memory layout. Tells the compiler to share one Device subobject instead of duplicating it. Diamond problem solver.
+!virtual on functions:
+virtual void turnOn() { ... }
+*This is about runtime dispatch. Tells the compiler to call the correct overridden version when accessed through a base pointer.
+Device* d = &L;
+d->turnOn();  //* calls Light::turnOn() if overridden, not Device::turnOn()
+*Without virtual on the function, it would call Device::turnOn() regardless of the actual object type.
+*The virtual on functions (turnOn, turnOff) is independent — you keep those regardless of which inheritance structure you use. They solve a completely different problem.
+*One keyword, two jobs. Inheritance layout vs function dispatch.
+*/
+
 /* //! ARRAY OF OBJECTS
  *Can be initialized in two ways:
  *----without default constructor----
@@ -571,6 +1128,7 @@ int main()
 ? string brand
 ? int mileage
 ? Make these members accessible in main() using getters and setters
+
 ! GETTER/SETTER + ENCAPSULATION
 */
 /*
@@ -734,190 +1292,6 @@ int main() {
   return 0;
 }
 */
-
-/* //! INHERITANCE
-*THERE ARE TYPES OF INHERITANCE: *SINGLE
-*MULTIPLE : where one parent has a child who has another child.
-*MULTILEVEL : where one child has more than one parent
-
-class VehicleInfo //*PARENT 1
-{
-public:
-    int vehicleID;
-    string model;
-    VehicleInfo() {}
-    VehicleInfo(int id, string model) : vehicleID(id), model(model) {}
-};
-class RentalInfo //*PARENT 2
-{
-public:
-    double rentalPricePerDay;
-    string status;
-    RentalInfo() {}
-    RentalInfo(string status) : rentalPricePerDay(30.5),
-status(status) {}
-};
-
-class RentalVehicle : public VehicleInfo, public RentalInfo //*CHILD
-{
-public:
-
-    int days;
-    RentalVehicle(int id, string model, string status, int days) :
-VehicleInfo(id, model), RentalInfo(status), days(days) {}
-    double totalCost()
-    {
-        return days * rentalPricePerDay;
-    }
-    void display()
-    {
-        cout << "-----DETAILS-----" << endl;
-        cout << "VEHICLE ID: " << vehicleID << endl
-             << "MODEL: " << model << endl
-             << "STATUS: " << status << endl
-             << "TOTAL COST: " << totalCost();
-    }
-};
-int main()
-{
-    RentalVehicle r1(432, "Corolla", "available", 7);
-    r1.totalCost();
-    r1.display();
-    return 0;
-}
-
-*HIERARCHICAL: where one parent has many children
-class Staff
-{
-public:
-    int staffID;
-    string name;
-    double baseSalary;
-public:
-    Staff(int id, string n, double bs)
-        : staffID(id), name(n), baseSalary(bs) {}
-    double CalculateBaseSalary()
-    {
-        return baseSalary + 2000;
-    }
-    void DisplayDetails()
-    {
-        cout &lt;&lt; &quot;Staff ID: &quot; &lt;&lt; staffID &lt;&lt; endl;
-        cout &lt;&lt; &quot;Name: &quot; &lt;&lt; name &lt;&lt; endl;
-        cout &lt;&lt; &quot;Base Salary with Allowance: &quot; &lt;&lt;
-CalculateBaseSalary() &lt;&lt; endl;
-    }
-};
-class Driver : public Staff
-{
-private:
-    int tripsCompleted;
-public:
-    Driver(int id, string n, double bs, int trips)
-        : Staff(id, n, bs), tripsCompleted(trips) {}
-    double CalculateBonus()
-    {
-        return tripsCompleted * 500;
-    }
-    void DisplayDetails()
-
-    {
-        Staff::DisplayDetails();
-        cout &lt;&lt; &quot;Trips Completed: &quot; &lt;&lt; tripsCompleted &lt;&lt; endl;
-        cout &lt;&lt; &quot;Bonus: &quot; &lt;&lt; CalculateBonus() &lt;&lt; endl;
-        cout &lt;&lt; &quot;Total Salary: &quot; &lt;&lt; CalculateBaseSalary() +
-CalculateBonus() &lt;&lt; endl;
-    }
-};
-class Loader : public Staff
-{
-private:
-    int itemsHandled;
-public:
-    Loader(int id, string n, double bs, int items)
-        : Staff(id, n, bs), itemsHandled(items) {}
-    double CalculateBonus()
-    {
-        return itemsHandled * 200;
-    }
-    void DisplayDetails()
-    {
-        Staff::DisplayDetails();
-        cout &lt;&lt; &quot;Items Handled: &quot; &lt;&lt; itemsHandled &lt;&lt; endl;
-        cout &lt;&lt; &quot;Bonus: &quot; &lt;&lt; CalculateBonus() &lt;&lt; endl;
-        cout &lt;&lt; &quot;Total Salary: &quot; &lt;&lt; CalculateBaseSalary() +
-CalculateBonus() &lt;&lt; endl;
-    }
-};
-int main()
-{
-    Driver driver1(101, &quot;Alice&quot;, 30000, 10);
-    Loader loader1(102, &quot;Bob&quot;, 25000, 50);
-    cout &lt;&lt; &quot;Driver Details:&quot; &lt;&lt; endl;
-
-    driver1.DisplayDetails();
-    cout &lt;&lt; endl;
-    cout &lt;&lt; &quot;Loader Details:&quot; &lt;&lt; endl;
-    loader1.DisplayDetails();
-    return 0;
-}
-
-*HYBRID : inbreeding
-*TO PREVENT AMBIGUITY WITHOUT USING VIRTUAL, USE SCOPE RESOLUTION
-*EXAMPLE -->
-
-class Animal
-{
-public:
-    string name;
-    Animal() {}
-    Animal(string name) : name(name) {}
-    void describe()
-    {
-        cout << "I am " << name << endl;
-    }
-};
-class FlyingCreature : public Animal
-{
-
-public:
-    int max_Altitude;
-    FlyingCreature() {}
-    FlyingCreature(string n1, int max) : Animal(n1), max_Altitude(max) {}
-    void fly()
-    {
-        cout << "The max altitude is: " << max_Altitude << endl;
-    }
-};
-class SwimCreature : public Animal
-{
-public:
-    int max_depth;
-    SwimCreature() {}
-    SwimCreature(string n1, int max) : Animal(n1), max_depth(max) {}
-    void swim()
-    {
-        cout << "The max depth is: " << max_depth << endl;
-    }
-};
-
-class Duck : public FlyingCreature, public SwimCreature
-{
-public:
-    Duck() {}
-    Duck(string n1, string n2, int maxA, int maxD) : FlyingCreature(n1, maxA), SwimCreature(n2, maxD) {}
-};
-int main()
-{
-    Duck d("Sparrow", "Duck", 45, 56);
-    d.FlyingCreature::describe();
-    d.fly();
-    d.SwimCreature::describe();
-    d.swim();
-}
-
-*DIAMOND PROBLEM:
-
 
 /* //! DMA
 ! syntax for DMA --> pointer_name = new return_type 'or' return_type[size];
