@@ -1,762 +1,745 @@
-
-#define MAX_VEHICLES 100
-#define MAX_LISTING 100
 #include <iostream>
-#include <string>
+#include <cmath>
+#include <cstring>
 using namespace std;
+/*
+**Problem:**
 
-class Vehicle
+A company has employees. Some are `Developers`, some are `Managers`, some are `TechLead` (both).
+
+```
+Employee
+├── Developer
+├── Manager
+└── TechLead (inherits both)
+```
+
+- `Employee`: has `name`, `baseSalary`. Has a virtual method `getSalary()` that returns `baseSalary`.
+- `Developer`: adds `projectBonus`. Overrides `getSalary()` to include it.
+- `Manager`: adds `teamBonus`. Overrides `getSalary()` to include it.
+- `TechLead`: inherits both. Overrides `getSalary()` to include all three.
+*/
+class Employee
 {
-    int vehicleID;
-    string brand;
-    string model;
-    int year;
-    double price;
-    double mileage;
-    bool isauto;
+public:
+    string name;
+    int baseSalary;
+    Employee(string name, int baseSalary) : name(name), baseSalary(baseSalary) {}
+    virtual void getSalary() { cout << "Employee: " << baseSalary << endl; }
+};
+class Developer : virtual public Employee
+{
+    int projectBonus;
 
 public:
-    Vehicle() : vehicleID(0) {}
-    Vehicle(int id, string brand, string model, int year, double price, double mileage, bool isauto) : vehicleID(id), brand(brand), model(model), year(year), price(price), mileage(mileage), isauto(isauto) {}
-    Vehicle(const Vehicle &obj)
-        : vehicleID(obj.vehicleID),
-          brand(obj.brand),
-          model(obj.model),
-          year(obj.year),
-          price(obj.price),
-          mileage(obj.mileage),
-          isauto(obj.isauto)
+    Developer(string name, int baseSalary, int p) : Employee(name, baseSalary), projectBonus(p) {}
+    void getSalary() override
     {
-    }
-    int getVehicleID() const
-    {
-        return vehicleID;
-    }
-
-    string getbrand() const
-    {
-        return brand;
-    }
-    string getmodel() const
-    {
-        return model;
-    }
-    int getyear() const
-    {
-        return year;
-    }
-    double getprice() const
-    {
-        return price;
-    }
-    void setprice(double p)
-    {
-        price = p;
-    }
-    double getmileage() const
-    {
-        return mileage;
-    }
-
-    void showSpecs() const
-    {
-        cout << "\n-------DETAILS-------\n";
-        cout << "Vehicle ID: " << vehicleID << endl;
-        cout << "Brand: " << brand << endl;
-        cout << "Model: " << model << endl;
-        cout << "Year: " << year << endl;
-        cout << "Price: " << price << endl;
-        cout << "Mileage: " << mileage << endl;
-        cout << "AUTOMATIC: " << (isauto ? "YES" : "NO") << endl;
+        cout << "Developer: " << baseSalary << endl;
     }
 };
-class User
+class Manager : virtual public Employee
 {
-    const int userID;
-    int userNumber;
-    string username, password;
-    string role;
-    static int totalUsers;
+    int teamBonus;
 
 public:
-    User() : userID(0), userNumber(0) {}
-
-    User(int id, int num, string name, string password, string role) : userID(id), userNumber(num), username(name), password(password), role(role)
+    Manager(string name, int baseSalary, int t) : Employee(name, baseSalary), teamBonus(t) {}
+    void getSalary() override
     {
-        totalUsers++;
-    };
-    static int getTotalUsers()
-    {
-        return totalUsers;
-    }
-    int getUserID() const
-    {
-        return userID;
-    }
-    string getRole() const
-    {
-        return role;
-    }
-    void updateProfile()
-    {
-        int choice;
-        cout << "What do you want to change? \n";
-        cout << "1. Name: \n2. Number\n3. Password\n4. Role\nCHOICE: ";
-        cin >> choice;
-        switch (choice)
-        {
-        case 1:
-            cout << "Enter new Name: ";
-            cin >> username;
-            break;
-
-        case 2:
-            cout << "Enter new number: ";
-            cin >> userNumber;
-            break;
-
-        case 3:
-            cout << "Enter new password: ";
-            cin >> password;
-            break;
-
-        case 4:
-            cout << "Enter new role: ";
-            cin >> role;
-            break;
-
-        default:
-            cout << "INVALID!\n";
-            break;
-        }
+        cout << "Manager: " << baseSalary << endl;
     }
 };
-int User::totalUsers = 0;
-class Listing
+class TechLead : public Developer, public Manager
 {
-private:
-    int listingID;
-    Vehicle v;     // COMPOSITION
-    User *u;       // AGGREGATION
-    string status; // "pending", "approved", "sold"
-    string postedDate;
-    static int totalListings;
-
 public:
-    Listing() : listingID(0), u(NULL), status("pending"), postedDate("") {}
-    Listing(int id, Vehicle v, User *u, string date) : listingID(id), v(v), u(u), postedDate(date), status("pending")
+    TechLead(string name, int baseSalary, int p, int t) : Employee(name, baseSalary), Developer(name, baseSalary, p), Manager(name, baseSalary, t) {}
+    void getSalary() override
     {
-        totalListings++;
-    }
-
-    static int getTotalListings()
-    {
-        return totalListings;
-    }
-
-    Vehicle &getvehicle()
-    {
-        return v;
-    }
-
-    const Vehicle &getvehicle() const
-    {
-        return v;
-    }
-    void publish()
-    {
-        if (status == "pending")
-        {
-            status = "approved";
-            cout << "Listing published successfully.\n";
-        }
-        else
-        {
-            cout << "Listing is already published or sold.\n";
-        }
-    }
-    void markSold()
-    {
-        if (status == "approved")
-        {
-            status = "sold";
-            cout << "Listing marked as sold.\n";
-        }
-        else
-        {
-            cout << "Listing cannot be marked as sold.\n";
-        }
-    }
-    void updateListing(double newprice)
-    {
-        v.setprice(newprice);
-        cout << "Listing price updated successfully.\n";
-    }
-
-    int getListingID() const
-    {
-        return listingID;
-    }
-    string getStatus() const
-    {
-        return status;
-    }
-    void setStatus(string s)
-    {
-        status = s;
+        cout << "Techlead: " << baseSalary << endl;
     }
 };
-int Listing::totalListings = 0;
-class Message
+int main()
 {
-    int messageID;
-    int senderID;
-    int receiverID;
-    string content;
+    Employee *e[3];
+    e[0] = new Developer("John", 12000, 3000);
+    e[1] = new Manager("Doe", 15000, 1000);
+    e[2] = new TechLead("Alice", 20000, 3000, 1000);
+    for (int i = 0; i < 3; i++)
+    {
+        e[i]->getSalary();
+    }
+}
 
+/*
+----CLAUDE EX
+*/
+class Animal
+{
 public:
-    Message() {}
-
-    Message(int id, int sender, int receiver, string text)
-        : messageID(id), senderID(sender), receiverID(receiver), content(text) {}
-
-    int getMessageID() const
+    string name;
+    Animal(string n) : name(n) {}
+    virtual void speak() // virtual function
     {
-        return messageID;
-    }
-    int getReceiverID() const
-    {
-        return receiverID;
-    }
-
-    int getSenderID() const
-    {
-        return senderID;
-    }
-
-    void display() const
-    {
-        cout << "From: " << senderID << " -> "
-             << "To: " << receiverID << endl;
-        cout << "Message: " << content << endl;
+        cout << name << " makes a sound" << endl;
     }
 };
 
-class Favourites
+class Flyable : virtual public Animal // virtual base class
 {
-    Listing *favListings[20];
-    int favCount;
-    int maxLimit;
-    string categoryName;
-    bool isPrivate;
-
 public:
-    int getFavCount() const
+    Flyable(string n) : Animal(n) {}
+    virtual void fly()
     {
-        return favCount;
-    }
-    Favourites()
-    {
-        favCount = 0;
-    }
-
-    bool addToFav(Listing &l)
-    {
-        if (favCount >= 20)
-            return false;
-
-        favListings[favCount++] = &l;
-        return true;
-    }
-
-    bool removeFromFav(int listingID)
-    {
-        for (int i = 0; i < favCount; i++)
-        {
-            if (favListings[i]->getListingID() == listingID)
-            {
-                for (int j = i; j < favCount - 1; j++)
-                    favListings[j] = favListings[j + 1];
-
-                favCount--;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    void viewFavs() const
-    {
-        for (int i = 0; i < favCount; i++)
-        {
-            favListings[i]->getvehicle().showSpecs();
-        }
+        cout << name << " is flying" << endl;
     }
 };
 
-class Buyer
+class Swimmable : virtual public Animal // virtual base class
 {
-
-    double budget;
-    Favourites fav;
-    int totalPurchases;
-    string preferredBrand;
-    bool verifiedBuyer;
-
 public:
-    Buyer() : budget(0) {}
-    Buyer(double b) : budget(b) {}
-
-    double getBudget() const
+    Swimmable(string n) : Animal(n) {}
+    virtual void swim()
     {
-        return budget;
-    }
-
-    bool addtoFavs(Listing &l) // todo VEHICLE OBJ
-    {
-        return fav.addToFav(l);
-    }
-    bool remfromFavs(int listingID)
-    {
-        return fav.removeFromFav(listingID);
-    }
-    void viewFavourites()
-    {
-        fav.viewFavs();
-    }
-};
-class Company
-{
-    const string companyName = "PAKWHEELS";
-
-    Listing *listings[MAX_LISTING];
-    int listingCount;
-
-    User users[50];
-    int userCount;
-
-    Message messages[100];
-    int messageCount;
-
-public:
-    Company()
-    {
-        listingCount = 0;
-        userCount = 0;
-        messageCount = 0;
-    }
-
-    bool addListing(Listing *l)
-    {
-        if (listingCount >= MAX_LISTING)
-            return false;
-
-        listings[listingCount++] = l;
-        return true;
-    }
-
-    Listing *findListing(int listingID)
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-            if (listings[i]->getListingID() == listingID)
-                return listings[i];
-        }
-        return NULL;
-    }
-
-    bool sendMessage(int senderID, int receiverID, string text)
-    {
-        if (messageCount >= 100)
-            return false;
-
-        messages[messageCount++] = Message(messageCount, senderID, receiverID, text);
-        return true;
-    }
-
-    void viewMessages(int userID)
-    {
-        for (int i = 0; i < messageCount; i++)
-        {
-            if (messages[i].getReceiverID() == userID)
-            {
-                messages[i].display();
-            }
-        }
-    }
-
-    void showAllListings() const
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-            listings[i]->getvehicle().showSpecs();
-        }
-    }
-    Listing *getListings()
-    {
-        return *listings;
-    }
-
-    int getListingCount() const
-    {
-        return listingCount;
-    }
-};
-class Seller
-{
-    double sellerRating;
-    bool verifiedStatus;
-    double accountBalance;
-    Listing *sellerListings[50];
-    int listingCount;
-
-public:
-    Seller(double sellerRating, double accountBalance) : sellerRating(sellerRating), accountBalance(accountBalance)
-    {
-        listingCount = 0;
-        verifiedStatus = false;
-    }
-    bool addListing(Listing &l)
-    {
-        if (listingCount >= 50)
-            return false;
-        sellerListings[listingCount] = &l;
-        listingCount++;
-        return true;
-    }
-    bool updateListing(int listingID, double newPrice)
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-
-            if (sellerListings[i]->getListingID() == listingID)
-            {
-                if (sellerListings[i]->getStatus() != "approved")
-                {
-                    cout << "Listing not approved yet.\n";
-                    return false;
-                }
-
-                sellerListings[i]->updateListing(newPrice);
-                return true;
-            }
-        }
-        return false;
-    }
-    bool deleteListing(int listingID)
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-            if (sellerListings[i]->getListingID() == listingID)
-            {
-                for (int j = i; j < listingCount - 1; j++)
-                {
-                    sellerListings[j] = sellerListings[j + 1];
-                }
-                listingCount--;
-                return true;
-            }
-        }
-        return false;
-    }
-    bool respondToMessage(Company &c, int sellerID, int buyerID, string reply)
-    {
-        return c.sendMessage(sellerID, buyerID, reply);
+        cout << name << " is swimming" << endl;
     }
 };
 
-class Admin
-{
-    int adminLevel;
-    bool permissions;
-    int totalApprovedListing;
-    string adminName;
-    int yearsOfService;
-    bool superAdmin;
-
-public:
-    Admin(int adminlvl, bool perms, int TAL) : adminLevel(adminlvl), permissions(perms), totalApprovedListing(TAL) {}
-
-    bool approveListing(Company &c, int listingID)
-    {
-        Listing *l = c.findListing(listingID);
-
-        if (l && l->getStatus() == "pending")
-        {
-            l->setStatus("approved");
-            totalApprovedListing++;
-            return true;
-        }
-
-        return false;
-    }
-    bool removeListing(Company &c, int listingID)
-    {
-        Listing *l = c.findListing(listingID);
-
-        if (l)
-        {
-            l->setStatus("removed");
-            return true;
-        }
-
-        return false;
-    }
-
-    bool banUsers(User users[], int size, int id)
-    {
-        for (int i = 0; i < size; i++)
-        {
-            if (users[i].getUserID() == id)
-            {
-                cout << "User " << id << " banned.\n";
-                return true;
-            }
-        }
-        return false;
-    }
-};
-
-class Search
+class Duck : public Flyable, public Swimmable
 {
 public:
-    static void searchByBrand(Listing l[], int count, const string &brand)
+    Duck(string n) : Animal(n), Flyable(n), Swimmable(n) {}
+    void speak() override // overrides Animal's virtual function
     {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getbrand() == brand)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-
-    static void searchByModel(Listing l[], int count, const string &model)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getmodel() == model)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-
-    static void searchByYear(Listing l[], int count, int year)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getyear() == year)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-
-    static void searchByPrice(Listing l[], int count, double maxPrice)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getprice() <= maxPrice)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-
-    static void searchByMileage(Listing l[], int count, double maxMileage)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getmileage() <= maxMileage)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
+        cout << name << " says Quack" << endl;
     }
 };
 
 int main()
 {
-    int id, num;
-    string name, password, role;
+    Duck d("Donald");
+    d.speak();
+    d.fly();
+    d.swim();
 
-    cout << "Enter User ID: ";
-    cin >> id;
-    cout << "Enter Number: ";
-    cin >> num;
-    cout << "Enter Username: ";
-    cin >> name;
-    cout << "Enter Password: ";
-    cin >> password;
-    cout << "Enter Role (buyer/seller/admin): ";
-    cin >> role;
+    Animal *a = &d;
+    a->speak();
+}
 
-    User u1(id, num, name, password, role);
-
-    Company company;
-
-    // Vehicles
-
-    Vehicle v1(1, "Toyota", "Corolla", 2020, 4500000, 30000, false);
-    Vehicle v2(2, "Mercedes", "Benz", 2020, 7600000, 40000, true);
-    Vehicle v3(3, "Toyota", "Alto", 1999, 200000, 10000, false);
-    // Listings
-    Seller s1(4.5, 100000);
-    Listing l1(101, v1, &u1, "12/3/2026");
-    Listing l2(102, v2, &u1, "13/3/2026");
-
-    company.addListing(&l1);
-    company.addListing(&l2);
-
-    Buyer buyerObj(5000000);
-    Seller sellerObj(4.5, 100000);
-    Admin adminObj(1, true, 0);
-
-    int choice;
-
-    do
+/*---VIRTUAL CLASS EX*/
+class Staff
+{
+public:
+    int id;
+    string name;
+    int baseSalary;
+    Staff(int id, string name, int baseSalary) : id(id), name(name), baseSalary(baseSalary) {}
+    int calculatebaseSalary()
     {
-        cout << "\n------ MENU ------\n";
-        cout << "1. Search Listings\n";
-        cout << "2. Add to Favourites\n";
-        cout << "3. Send Message\n";
-        cout << "4. Approve Listing\n";
-        cout << "5. Exit\n";
-        cout << "Choice: ";
-        cin >> choice;
+        return baseSalary + 3000;
+    }
+};
+class Doctor : public virtual Staff
+{
+public:
+    int patientsTreated;
+    Doctor(int id, string name, int baseSalary, int patientsTreated) : Staff(id, name, baseSalary), patientsTreated(patientsTreated) {}
+    int dbonus() { return patientsTreated * 500; }
+};
+class Nurse : public virtual Staff
+{
+public:
+    int hours;
+    Nurse(int id, string name, int baseSalary, int hours) : Staff(id, name, baseSalary), hours(hours) {}
+    int nbonus() { return hours * 200; }
+};
+class HeadNurse : public Doctor, public Nurse
+{
+public:
+    HeadNurse(int id, string name, int baseSalary, int patientsTreated, int hours) : Staff(id, name, baseSalary), Doctor(id, name, baseSalary, patientsTreated), Nurse(id, name, baseSalary, hours) {}
+    int Total()
+    {
+        return calculatebaseSalary() + dbonus() + nbonus();
+    }
+    void display()
+    {
+        cout << id << endl
+             << name << endl
+             << baseSalary << endl
+             << patientsTreated << endl
+             << hours << endl
+             << "staff: " << calculatebaseSalary() << endl
+             << "dbonus: " << dbonus() << endl
+             << "nbonus" << nbonus() << endl
+             << "total: " << Total();
+    }
+};
+int main()
+{
+    HeadNurse h(101, "John", 56000, 100, 5);
+    h.calculatebaseSalary();
+    h.dbonus();
+    h.nbonus();
+    h.Total();
+    h.display();
+}
 
-        if (role == "buyer")
+/* COMP / AGGREG*/
+class Device
+{
+    int id;
+    int rating;
+    int hours;
+
+public:
+    Device() {}
+    Device(int id, int rating, int hours) : id(id), rating(rating), hours(hours) {}
+    double Dailyenergy()
+    {
+        return rating * hours;
+    }
+    void display()
+    {
+        cout << "Device ID: " << id << " | Rating: " << rating << " | Hours: " << hours << " | Daily Energy: " << Dailyenergy() << endl;
+    }
+};
+class Room
+{
+    Device *devices;
+    int size;
+
+public:
+    Room() : size(0), devices(nullptr) {}
+    Room(int size, Device *d) : size(size)
+    {
+        devices = new Device[size];
+        for (int i = 0; i < size; i++)
         {
-            switch (choice)
-            {
-            case 1:
-            {
-                int searchChoice;
-                cout << "1.Brand\n2.Model\n3.Year\n4.Price\n5.Mileage\nChoice: ";
-                cin >> searchChoice;
-
-                switch (searchChoice)
-                {
-                case 1:
-                {
-                    string brand;
-                    cout << "Enter brand: ";
-                    cin >> brand;
-                    Search::searchByBrand(company.getListings(), company.getListingCount(), brand);
-                    break;
-                }
-                case 2:
-                {
-                    string model;
-                    cout << "Enter model: ";
-                    cin >> model;
-                    Search::searchByModel(company.getListings(), company.getListingCount(), model);
-                    break;
-                }
-                case 3:
-                {
-                    int year;
-                    cout << "Enter year: ";
-                    cin >> year;
-                    Search::searchByYear(company.getListings(), company.getListingCount(), year);
-                    break;
-                }
-                case 4:
-                {
-                    double price;
-                    cout << "Enter max price: ";
-                    cin >> price;
-                    Search::searchByPrice(company.getListings(), company.getListingCount(), price);
-                    break;
-                }
-                case 5:
-                {
-                    double mileage;
-                    cout << "Enter max mileage: ";
-                    cin >> mileage;
-                    Search::searchByMileage(company.getListings(), company.getListingCount(), mileage);
-                    break;
-                }
-                }
-                break;
-            }
-
-            case 2:
-            {
-                int listingID;
-                cout << "Enter Listing ID to favourite: ";
-                cin >> listingID;
-
-                Listing *found = company.findListing(listingID);
-                if (found && buyerObj.addtoFavs(*found))
-                    cout << "Added to favourites.\n";
-                else
-                    cout << "Failed to add.\n";
-                break;
-            }
-
-            case 3:
-            {
-                int receiverID;
-                string msg;
-                cout << "Enter Seller ID: ";
-                cin >> receiverID;
-                cout << "Enter Message: ";
-                cin.ignore();
-                getline(cin, msg);
-
-                if (company.sendMessage(u1.getUserID(), receiverID, msg))
-                    cout << "Message sent.\n";
-                else
-                    cout << "Message failed.\n";
-                break;
-            }
-
-            case 4:
-                cout << "You do not have permission to perform this action.\n";
-                break;
-            }
+            devices[i] = d[i];
         }
-        else if (role == "seller")
+    }
+    double Totalenergy()
+    {
+        double total = 0;
+        for (int i = 0; i < size; i++)
         {
-            if (choice == 4)
-                cout << "You do not have permission to perform this action.\n";
-            else
-                cout << "Seller functionality can be expanded here.\n";
+            total += devices[i].Dailyenergy();
         }
-        else if (role == "admin")
+        return total;
+    }
+    void display()
+    {
+        cout << "Room Devices:" << endl;
+        for (int i = 0; i < size; i++)
+            devices[i].display();
+        cout << "Room Total Energy: " << Totalenergy() << endl;
+    }
+};
+class House
+{
+    int id;
+    string owner;
+    Room *room;
+    int size;
+
+public:
+    House() : id(0), owner(""), room(nullptr), size(0) {}
+    House(int id, string owner, int size, Room *r) : id(id), owner(owner), size(size)
+    {
+        room = new Room[size];
+        for (int i = 0; i < size; i++)
         {
-            if (choice == 4)
-            {
-                int listingID;
-                cout << "Enter Listing ID to approve: ";
-                cin >> listingID;
-
-                Listing *found = company.findListing(listingID);
-                if (found)
-                {
-                    found->publish();
-                    cout << "Approved.\n";
-                }
-                else
-                    cout << "Listing not found.\n";
-            }
-            else
-            {
-                cout << "Admins only approve listings here.\n";
-            }
+            room[i] = r[i];
         }
-        else
+    }
+    double Houseenergy()
+    {
+        double total = 0;
+        for (int i = 0; i < size; i++)
         {
-            cout << "Invalid role.\n";
+            total += room[i].Totalenergy();
         }
+        return total;
+    }
+    void display()
+    {
+        cout << "House ID: " << id << " | Owner: " << owner << endl;
+        for (int i = 0; i < size; i++)
+            room[i].display();
+        cout << "House Total Energy: " << Houseenergy() << endl;
+    }
+};
+int main()
+{
+    Device d1[] = {Device(101, 5, 6), Device(102, 2, 7)};
+    Device d2[] = {Device(103, 8, 3), Device(104, 5, 4)};
+    Room room[] = {Room(2, d1), Room(2, d2)};
+    House h1(492, "John", 2, room);
+    h1.display();
+}
 
-    } while (choice != 5);
+/*AGREG*/
+class Laptop
+{
+public:
+    string brand;
+    int size;
+    int battery;
+    Laptop() : brand(""), size(0), battery(0) {}
+    Laptop(string brand, int size, int battery) : brand(brand), size(size), battery(battery) {}
+    double Time()
+    {
+        return (double)battery / (double)(size * 500);
+    }
+};
 
-    cout << "Exiting system.\n";
+class Student
+{
+    int id;
+    string name;
+    Laptop *L;
 
-    cout << "Total Users: " << User::getTotalUsers() << endl;
-    cout << "Total Listings: " << Listing::getTotalListings() << endl;
-    return 0;
+public:
+    Student() : id(0), name(""), L(nullptr) {}
+    Student(int id, string name, Laptop *L) : id(id), name(name), L(L) {}
+    void display()
+    {
+        cout << "ID: " << id << endl
+             << "NAME: " << name << endl;
+        cout << "BRAND: " << L->brand << endl;
+        cout << "SIZE: " << L->size << endl;
+        cout << "BATTERY: " << L->battery << endl;
+        cout << "TIME: " << L->Time();
+    }
+};
+int main()
+{
+    Laptop l1("Dell", 5, 6);
+    Student s1(101, "John", l1);
+    l1.Time();
+    s1.display();
+}
+/*COMP */
+class Laptop
+{
+public:
+    string brand;
+    int size;
+    int battery;
+    Laptop() : brand(""), size(0), battery(0) {}
+    Laptop(string brand, int size, int battery) : brand(brand), size(size), battery(battery) {}
+    double Time()
+    {
+        return (double)battery / (double)(size * 500);
+    }
+};
+
+class Student
+{
+    int id;
+    string name;
+    Laptop L;
+
+public:
+    Student() : id(0), name("") {}
+    Student(int id, string name, Laptop L) : id(id), name(name), L(L) {}
+    void display()
+    {
+        cout << "ID: " << id << endl
+             << "NAME: " << name << endl;
+        cout << "BRAND: " << L.brand << endl;
+        cout << "SIZE: " << L.size << endl;
+        cout << "BATTERY: " << L.battery << endl;
+        cout << "TIME: " << L.Time();
+    }
+};
+int main()
+{
+    Laptop l1("Dell", 5, 6);
+    Student s1(101, "John", l1);
+    l1.Time();
+    s1.display();
+}
+/*
+o Data members: student ID, name, and a Laptop object.
+o A constructor to initialize all data members (including laptop details).
+o A member function to display complete student information, including laptop
+details and calculated battery backup time.
+
+3. In the main() function:
+o Create at least two Student objects with different laptop configurations.
+o Display their complete information using the display function.*/
+
+class Course
+{
+    string title;
+    int hrs;
+
+public:
+    Course() : title(""), hrs(0) {}
+    Course(string title, int hrs) : title(title), hrs(hrs) {}
+    Course(const Course &obj)
+    {
+        hrs = obj.hrs;
+        title = obj.title;
+    }
+    ~Course() {}
+    void display()
+    {
+        cout << title << endl
+             << hrs << endl;
+    }
+};
+class Teacher
+{
+    string name;
+    string subj;
+    Course *course;
+
+public:
+    Teacher() : name(""), subj(""), course(nullptr) {}
+    Teacher(string name, string subj, Course c) : name(name), subj(subj)
+    {
+        course = new Course(c);
+    }
+    Teacher(const Teacher &obj) : name(obj.name), subj(obj.subj)
+    {
+        course = new Course(*obj.course);
+    }
+    ~Teacher()
+    {
+        delete course;
+    }
+    void display()
+    {
+        cout << name << endl
+             << subj << endl;
+        if (course)
+            course->display();
+    }
+};
+class School
+{
+    Teacher *teacher;
+    int size;
+
+public:
+    School(int size) : size(size)
+    {
+        teacher = new Teacher[size];
+    }
+    School(const School &obj) : size(obj.size)
+    {
+        teacher = new Teacher[size];
+        for (int i = 0; i < size; i++)
+        {
+            teacher[i] = obj.teacher[i];
+        }
+    }
+    ~School()
+    {
+        delete[] teacher;
+    }
+    void setTeacher(string name, string subj, Course c, int i)
+    {
+        teacher[i] = Teacher(name, subj, c);
+    }
+    void display()
+    {
+        for (int i = 0; i < size; i++)
+        {
+            cout << "---T " << i + 1 << endl;
+            teacher[i].display();
+        }
+    }
+};
+int main()
+{
+    Course c1("Math", 3);
+    Course c2("Science", 2);
+    School s1(2);
+    s1.setTeacher("John", "Physics", c1, 0);
+    s1.setTeacher("Doe", "OOP", c2, 1);
+    School s2(s1);
+    s1.display();
+    s2.display();
+}
+
+/* COPY CONSTRUCTOR EX*/
+class Patient
+{
+    string name;
+    string diagnosis;
+
+public:
+    Patient() : name(""), diagnosis("") {}
+    Patient(string n, string d) : name(n), diagnosis(d) {}
+    Patient(const Patient &obj)
+    {
+        name = obj.name;
+        diagnosis = obj.diagnosis;
+    }
+    ~Patient() {}
+    void display()
+    {
+        cout << name << endl
+             << diagnosis << endl;
+    }
+};
+class Hospital
+{
+    Patient *patient;
+    int size;
+
+public:
+    Hospital(int size) : size(size)
+    {
+        patient = new Patient[size];
+    }
+    Hospital(const Hospital &obj) : size(obj.size)
+    {
+        patient = new Patient[size];
+        for (int i = 0; i < size; i++)
+        {
+            patient[i] = obj.patient[i];
+        }
+    }
+    ~Hospital()
+    {
+        delete[] patient;
+    }
+    void setpatient(int i, string name, string diag)
+    {
+        patient[i] = Patient(name, diag);
+    }
+    void display()
+    {
+        for (int i = 0; i < size; i++)
+        {
+            patient[i].display();
+        }
+    }
+};
+int main()
+{
+    Hospital h1(3);
+    h1.setpatient(0, "John", "Cancer");
+    h1.setpatient(1, "Doe", "TB");
+    h1.setpatient(2, "ALice", "Hepetitis");
+    Hospital h2(h1);
+    h1.setpatient(0, "John", "dead");
+    h1.display();
+    h2.display();
+}
+
+/* COPY CONSTRUCTOR*/
+class Song
+{
+    char *title;
+
+public:
+    Song() : title(nullptr) {}
+    Song(const char *t)
+    {
+        title = new char[strlen(t) + 1];
+        strcpy(title, t);
+    }
+    Song(const Song &obj)
+    {
+        title = new char[strlen(obj.title) + 1];
+        strcpy(title, obj.title);
+    }
+
+    void display()
+    {
+        cout << title << endl;
+    }
+    ~Song()
+    {
+        delete[] title;
+    }
+};
+class Playlist
+{
+    int size;
+    Song *songs;
+
+public:
+    Playlist(Song *s, int size) : size(size)
+    {
+        songs = new Song[size];
+        for (int i = 0; i < size; i++)
+        {
+            songs[i] = s[i];
+        }
+    }
+    Playlist(const Playlist &obj) : size(obj.size)
+    {
+        songs = new Song[obj.size];
+        for (int i = 0; i < size; i++)
+        {
+            songs[i] = obj.songs[i];
+        }
+    }
+    void setSong(int i, Song s)
+    {
+
+        songs[i] = s;
+    }
+    void display()
+    {
+        for (int i = 0; i < size; i++)
+            songs[i].display();
+    }
+    ~Playlist()
+    {
+        delete[] songs;
+    }
+};
+int main()
+{
+    Song s1[] = {Song("Candy"), Song("Roxxane")};
+    Playlist p1(s1, 2);
+    Playlist p2(p1);
+    p1.setSong(0, Song("new"));
+    cout << "P1: " << endl;
+    p1.display();
+    cout << endl;
+    cout << "P2: " << endl;
+    p2.display();
+}
+
+/*COPY CONSTRUCTOR*/
+
+class Book
+{
+    char *title;
+    int pages;
+
+public:
+    Book(char *t, int p) : pages(p)
+    {
+        title = new char[strlen(t) + 1];
+        strcpy(title, t);
+    }
+
+    Book(const Book &obj)
+    {
+        pages = obj.pages;
+        title = new char[strlen(obj.title) + 1];
+        strcpy(title, obj.title); //*can be written like this as well --> title[i] = obj.title[i] ;
+    }
+
+    ~Book()
+    {
+        delete[] title;
+    }
+    void display()
+    {
+        cout << title << endl;
+        cout << pages << endl;
+    }
+};
+class Author
+{
+    char *name;
+    Book *book;
+
+public:
+    Author(char *n, Book b)
+    {
+        name = new char[strlen(n) + 1];
+        strcpy(name, n);
+        book = new Book(b);
+    }
+    Author(const Author &obj)
+    {
+        name = new char[strlen(obj.name) + 1];
+        strcpy(name, obj.name);
+
+        book = new Book(*obj.book);
+        book = obj.book;
+    }
+    ~Author()
+    {
+        delete[] name;
+        delete[] book;
+    }
+    void display()
+    {
+        cout << name;
+    }
+};
+int main()
+{
+    Book b1("C++", 100);
+    Author a1("Deitel", b1);
+    b1.display();
+    a1.display();
+}
+
+/*--------EX*/
+int main()
+{
+    int amount;
+    cin >> amount;
+    int denominations[] = {5000, 1000, 500, 100, 20, 10, 5, 2, 1};
+
+    for (int i = 0; i < 11; i++)
+    {
+        if (amount >= denominations[i])
+        {
+            int count = amount / denominations[i];
+            amount %= denominations[i];
+            cout << denominations[i] << " x" << count << endl;
+        }
+    }
+}
+int main()
+{
+    int array[3][3];
+    int r = 3, c = 3;
+
+    for (int i = 0; i < r; i++)
+    {
+        for (int j = 0; j < c; j++)
+        {
+            cin >> array[i][j];
+        }
+    }
+    cout << endl;
+    for (int i = 0; i < r; i++)
+    {
+        int sum = 0;
+        for (int j = 0; j < c; j++)
+        {
+            sum += array[j][i];
+        }
+        cout << sum << endl;
+    }
+}
+int main()
+{
+    int array[5];
+    for (int i = 0; i < 5; i++)
+    {
+        cin >> array[i];
+    }
+    int sum = 0;
+    for (int i = 0; i < 5; i++)
+    {
+        sum += array[i];
+    }
+    cout << "\nSUM: " << sum << endl;
+    int size = 5;
+    for (int i = 0; i < size / 2; i++)
+    {
+        int temp = array[i];
+        array[i] = array[size - 1 - i];
+        array[size - 1 - i] = temp;
+    }
+    cout << "\nREVERSED:\n";
+    for (int i = 0; i < 5; i++)
+    {
+        cout << array[i] << " ";
+    }
 }
