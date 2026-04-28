@@ -1,8 +1,412 @@
 #include <iostream>
 #include <string>
 #include <cmath>
+#include <fstream>
 #include <cstring>
 using namespace std;
+class FileAppender
+{
+    ofstream file;
+    string fname;
+
+public:
+    FileAppender(string t) : fname(t)
+    {
+        file.open(fname, ios::app);
+        if (!file)
+        {
+            cout << "Could not create file.\n";
+            exit(1);
+        }
+    }
+
+    ~FileAppender()
+    {
+        file.close();
+        cout << "Data written successfully.\n";
+    }
+
+    void append(string text)
+    {
+        file << text;
+    }
+};
+int main()
+{
+    FileAppender f("output.txt");
+    f.append("hello my name is anz\n");
+    f.append("im 19.\n");
+}
+/* //! FILING
+*for filing, include the library. Syntax for creating and making a file is -->
+ofstream name("filename.txt"); name << "content";
+*for example,
+#include <fstream>
+ofstream file("textfile.txt");
+file <<"my first text/\n";
+*to close the file -->
+name.close();
+*in classes
+class Filing
+{
+    ofstream file;
+    string fname;
+
+public:
+    Filing(string s) : fname(s)
+    {
+        file.open(fname);
+        if (!file)
+        {
+            cout << "Cannot open file.\n";
+            exit(0);
+        }
+    }
+    void writeData(string message)
+    {
+        if (file.is_open())
+            file << message;
+    }
+    void closefile()
+    {
+        if (file.is_open())
+        {
+            file.close();
+            cout << "File closed\n";
+        }
+    }
+};
+
+int main()
+{
+    Filing h("output.txt");
+    h.writeData("hello my name is anz.\n");
+    h.writeData("im 19 years old.\n");
+    h.closefile();
+}
+*--------------------------------------------
+
+*/
+
+/* //! OPERATOR OVERLOADING
+*We do this when we want to add objects. since objects dont know what +, - or any of that is, we tell it by making its member functions and passing them in it.
+* SYNTAX : class_name op_name op_symbol (const class_name& onj_name)
+
+class Number
+{
+public:
+    int value;
+    Number(int v = 0) : value(v) {}
+
+    void display() const
+    {
+        cout << "c: " << value << endl;
+    }
+    //* addition
+    Number operator+(const Number &p)
+    {
+        Number a;
+        a.value = this->value + p.value;
+        return a;
+    }
+
+    //* sub
+    Number operator-(const Number &p)
+    {
+        Number a;
+        a.value = this->value - p.value;
+        return a;
+    }
+
+    //* assign add
+    Number &operator+=(const Number &p)
+    {
+        this->value += p.value;
+        return *this;
+    }
+
+    //* assign sub
+    Number &operator-=(const Number &p)
+    {
+        this->value -= p.value;
+        return *this;
+    }
+
+    //* unary
+    Number operator-()
+    {
+        Number a;
+        a.value = -this->value;
+        return a;
+    }
+
+    //* prefix inc
+    Number &operator++()
+    {
+        this->value++;
+        return *this;
+    }
+
+    //* postfix inc
+    Number operator++(int)
+    {
+        Number a = *this;
+        this->value++;
+        return a;
+    }
+};
+
+int main()
+{
+    Number a(10), b(2), c;
+    c = a + b;
+    c.display();
+    c = a - b;
+    c.display();
+
+    a += b;
+    a.display();
+    b -= a;
+    b.display();
+
+    c = -a;
+    c.display();
+
+    c = a++;
+    c.display();
+    c = ++b;
+    c.display();
+}
+*When we want to print an object, we cant just cout<<obj as it doesnt know what that means. so in order to print, we do friend functions
+*SYNTAX --> friend ostream& operator<<(ostream &print, const classname& obj);
+*then implement it,
+ostream& operator<<(ostream &print, const classname& obj){ print<<obj.membername; return print; }
+
+? EXERCISE --- friend function for displaying
+class Distance
+{
+    int value;
+
+public:
+    Distance(int v = 0) : value(v) {}
+    Distance operator+(const Distance &p)
+    {
+        Distance d;
+        d.value = this->value + p.value;
+        return d;
+    }
+    bool operator>(const Distance &p)
+    {
+        if (this->value > p.value)
+            return true;
+        else
+            return false;
+    }
+    bool operator==(const Distance &p)
+    {
+        if (p.value == this->value)
+            return true;
+        else
+            return false;
+    }
+    friend ostream &operator<<(ostream &out, const Distance &d);
+};
+ostream &operator<<(ostream &out, const Distance &d)
+{
+    out << d.value << endl;
+    return out;
+}
+
+int main()
+{
+    Distance d1(10), d2(15), d3;
+    d3 = d1 + d2;
+    cout << d3;
+    if (d1 > d2)
+        cout << 1 << endl;
+    else
+        cout << 0 << endl;
+
+    if (d1 == d2)
+        cout << 1 << endl;
+    else
+        cout << 0 << endl;
+}
+
+?EXERCISE --- performing arithmetic operations on objects using numbers instead of other objects.
+
+class BankAccount
+{
+    string id;
+    double balance;
+
+public:
+    BankAccount() : id("unknown"), balance(0.0) {}
+    BankAccount(string id, double b) : id(id), balance(b) {}
+
+    double getbalance()
+    {
+        return balance;
+    }
+    void setbalance(double b)
+    {
+        balance = b;
+    }
+    string getid()
+    {
+        return id;
+    }
+    BankAccount operator+(const BankAccount &obj)
+    {
+        BankAccount b1;
+        b1.balance = this->balance + obj.balance;
+        b1.id = this->id;
+        return b1;
+    }
+
+    *passing amount as we want to minus this specific number. In main, just write the number
+    BankAccount operator-(double amount)
+    {
+        BankAccount b1;
+        b1.balance = this->balance - amount;
+        b1.id = this->id;
+        if (b1.balance >= 0)
+            return b1;
+        else
+        {
+            b1.setbalance(0);
+            return b1;
+        }
+    }
+
+    bool operator>(const BankAccount &obj)
+    {
+        return this->balance > obj.balance;
+    }
+
+    friend ostream &operator<<(ostream &print, const BankAccount &b);
+};
+ostream &operator<<(ostream &print, const BankAccount &b)
+{
+    print << "ID: " << b.id << endl;
+    print << "Balance: " << b.balance;
+    return print;
+}
+int main()
+{
+    BankAccount b1("ACC001", 1000.0);
+    BankAccount b2("ACC002", 2500.0);
+    BankAccount b3 = b1 + b2;
+    cout << b3 << endl;
+    b1 = b1 - 1500;
+    cout << b1 << endl;
+    cout << b2 << endl;
+    cout << (b2 > b1);
+}
+
+?EXERCISE -- Using friend function for arithmetic operators
+class Number
+{
+    int answer;
+
+public:
+    Number(int a) : answer(a) {}
+
+    friend Number operator+(int num, const Number &obj); //*The reason why friend is used for + is because it allows to add left operand + right object, like: 5 + obj. normal operator+ only work if it is obj + 5. but doing this as a friend can work both ways
+    friend ostream &operator<<(ostream &print, const Number n);
+};
+Number operator+(int num, const Number &obj)
+{
+    return Number(num + obj.answer); //*Constructor will be used for returning.
+}
+ostream &operator<<(ostream &print, const Number n)
+{
+    print << n.answer << endl;
+    return print;
+}
+int main()
+{
+    Number n(10);
+    Number c = 5 + n;
+    cout << c; //*15
+}
+
+
+?Implementing
+?Point p1(1, 2), p2(3, 4);
+?Point p3 = p1 + p2;
+#include <iostream>
+using namespace std;
+
+class Point
+{
+    int x, y;
+
+public:
+    Point(int x, int y) : x(x), y(y) {}
+    Point operator+(const Point &p)
+    {
+        return Point(this->x + p.x, this->y + p.y); //*here this = p1 and p = p2 so this->x = p1.x and p.x = p2.x
+    }
+    friend ostream &operator<<(ostream &print, const Point &p);
+};
+ostream &operator<<(ostream &print, const Point &p)
+{
+    print << "(" << p.x << ", " << p.y << ")";
+    return print;
+}
+
+int main()
+{
+    Point p1(1, 2), p2(2, 3);
+    Point p3 = p1 + p2;
+    cout << p3;
+}
+
+
+
+*/
+
+// 6. Hotel Room Reservation with Inheritance A seaside hotel has three types of rooms: StandardRoom, DeluxeRoom, and SuiteRoom.
+// Each room type has different pricing and amenities. The hotel wants a basic reservation
+// system that captures guest details, assigns rooms, and computes total charges.
+// However, internal pricing rules (like seasonal multipliers or discounts) must not be
+// directly modifiable from outside the room classes.
+// Requirements:
+// Create a base class Room with:
+// Room number, base price per night, and occupancy status.
+// A constructor that initializes the room number and base price.
+// Create derived classes:
+// Use constructors and destructors to:
+// Display messages when reservations are created and destroyed, simulating allocation and release of booking resources.
+// The system should allow a tester to:
+// Create rooms of various types.
+// Create reservations.
+// Attempt to book an already occupied room and see that it is prevented by internal
+// logic (not by manipulating fields directly).
+
+/* //!FRIEND CLASS
+ *every friend class can access the members of the class they are declared in.
+class Engine; //*declaring here is important otherwise we wont be able to use it in class Car.
+
+class Car {
+    int horsepower = 400;
+    friend class Engine;
+};
+
+*definition
+class Engine {
+public:
+    void tune(Car c) {
+        cout << c.horsepower;
+    }
+};
+ */
+
+/* //! FRIEND FUNCTION
+ *declared inside class but defined outside as they dont belong to the class. The class decide whom the friends are and then shares its private / protected members with it. This prevents excess getters/setters.
+
+ */
 
 /*//! JIST OF INHERITANCE CONCEPTS + POLYMORPHISM
 class Device
@@ -560,7 +964,6 @@ Device* d = &L;
 d->turnOn();  //* calls Light::turnOn() if overridden, not Device::turnOn()
 *Without virtual on the function, it would call Device::turnOn() regardless of the actual object type.
 *The virtual on functions (turnOn, turnOff) is independent — you keep those regardless of which inheritance structure you use. They solve a completely different problem.
-*One keyword, two jobs. Inheritance layout vs function dispatch.
 */
 
 /* //! ARRAY OF OBJECTS
@@ -771,141 +1174,310 @@ int User::totalUsers = 0;
 ?Use constructor overloading to create users with or without an assigned role.
 ?Store user records in an array (dynamic memory allocation using pointers).
 ?Implement password validation (length, special character check).
-
 class User
 {
 public:
     int id;
-    string name, password, role;
+    string name;
+    string password;
+    string role;
 
-    User(int i, string n, string p, string r)
+    User() : id(0), name(""), password(""), role("Guest") {}
+
+    User(int id, string name, string password)
+        : id(id), name(name), password(password), role("Guest") {}
+
+    User(int id, string name, string password, string role)
+        : id(id), name(name), password(password), role(role) {}
+};
+
+class UserManager
+{
+private:
+    User *users;
+    int userCount;
+    int capacity;
+    int nextId;
+
+    int findIndex(int id)
     {
-        id = i;
-        name = n;
-        password = p;
-        role = r;
+        for (int i = 0; i < userCount; i++)
+            if (users[i].id == id)
+                return i;
+        return -1;
     }
 
-    User(int i, string n, string p)
+public:
+    UserManager(int capacity) : capacity(capacity), userCount(0), nextId(1)
     {
-        id = i;
-        name = n;
-        password = p;
-        role = "Guest";
+        users = new User[capacity];
     }
 
-    bool correctp(string p)
+    ~UserManager()
     {
-        bool special = false;
-        if (p.length() < 8)
+        delete[] users;
+    }
+
+    void addUser()
+    {
+        if (userCount >= capacity)
         {
-            return false;
+            cout << "Capacity full. Cannot add more users.\n";
+            return;
+        }
+
+        string name, password, role;
+        int flag;
+
+        cout << "NAME: ";
+        cin >> name;
+        cout << "PASSWORD: ";
+        cin >> password;
+        cout << "Assign role? (1 = custom, 0 = Guest): ";
+        cin >> flag;
+
+        if (flag == 1)
+        {
+            cout << "ROLE (Admin/User/Guest): ";
+            cin >> role;
+            if (role != "Admin" && role != "User" && role != "Guest")
+            {
+                cout << "Invalid role. Defaulting to Guest.\n";
+                role = "Guest";
+            }
+            users[userCount] = User(nextId++, name, password, role);
         }
         else
         {
-            for (int i = 0; i < p.length(); i++)
-            {
-                if (!isalnum(p[i]))
-                {
-                    special = true;
-                    break;
-                }
-            }
-            return special;
+            users[userCount] = User(nextId++, name, password);
         }
+
+        userCount++;
+        cout << "User added. Assigned ID: " << users[userCount - 1].id << "\n";
     }
 
-* default constructor for dma. since user-made constructors have args, a custom default is made so that during
-* dma, the constructor can exist without parameters.
-    User()
+    void removeUser()
     {
-        id = 0;
-        name = "";
-        password = "";
-        role = "Guest";
+        if (userCount == 0)
+        {
+            cout << "No users to remove.\n";
+            return;
+        }
+
+        int id;
+        cout << "Enter ID to remove: ";
+        cin >> id;
+
+        int idx = findIndex(id);
+        if (idx == -1)
+        {
+            cout << "User not found.\n";
+            return;
+        }
+
+        for (int j = idx; j < userCount - 1; j++)
+            users[j] = users[j + 1];
+
+        userCount--;
+        cout << "User removed.\n";
+    }
+
+    void displayAll()
+    {
+        if (userCount == 0)
+        {
+            cout << "No users registered.\n";
+            return;
+        }
+
+        for (int i = 0; i < userCount; i++)
+        {
+            cout << "\n--- USER " << i + 1 << " ---\n";
+            cout << "ID       : " << users[i].id << "\n";
+            cout << "NAME     : " << users[i].name << "\n";
+            cout << "PASSWORD : " << users[i].password << "\n";
+            cout << "ROLE     : " << users[i].role << "\n";
+        }
+        cout << "\n";
+    }
+
+    void changeRole()
+    {
+        int id, flag;
+        string role;
+
+        cout << "Enter ID to change role: ";
+        cin >> id;
+
+        int idx = findIndex(id);
+        if (idx == -1)
+        {
+            cout << "User not found.\n";
+            return;
+        }
+
+        cout << "Assign role? (1 = custom, 0 = Guest): ";
+        cin >> flag;
+
+        if (flag == 1)
+        {
+            cout << "ROLE (Admin/User/Guest): ";
+            cin >> role;
+            if (role != "Admin" && role != "User" && role != "Guest")
+            {
+                cout << "Invalid role. Defaulting to Guest.\n";
+                role = "Guest";
+            }
+            users[idx].role = role;
+        }
+        else
+        {
+            users[idx].role = "Guest";
+        }
+
+        cout << "Role updated to: " << users[idx].role << "\n";
     }
 };
+
 int main()
 {
     int n;
-    cout << "Enter number of users: ";
+    cout << "Max users to store: ";
     cin >> n;
-    User *users;
-    users = new User[n];
-    * normally when we use constructors, we directly initialize. But in the case of 'taking input', we
-    * declare vars, use simple looping to take input and then pass them to constructors.
-    int id;
-    string name, password, role;
-    int flag;
-    for (int i = 0; i < n; i++)
+
+    UserManager manager(n);
+
+    int choice;
+    do
     {
-        cout << "Person " << i + 1 << ":\n";
-        cout << "ID: ";
-        cin >> id;
-        cout << "NAME: ";
-        cin >> name;
-        while (true)
+        cout << "\n1. Add User\n2. Remove User\n3. Display All\n4. Change Role\n0. Exit\nChoice: ";
+        cin >> choice;
+
+        switch (choice)
         {
-            cout << "PASSWORD: ";
-            cin >> password;
-
-            if (users[i].correctp(password))
-                break;
-
-            cout << "Password invalid! Must be at least 8 chars and include a special character.\n";
+        case 1: manager.addUser();   break;
+        case 2: manager.removeUser(); break;
+        case 3: manager.displayAll(); break;
+        case 4: manager.changeRole(); break;
+        case 0: cout << "Exiting.\n"; break;
+        default: cout << "Invalid option.\n";
         }
+    } while (choice != 0);
 
-        cout << "Do you want to enter a role(enter 1) or use default role(enter 0)?: ";
-        cin >> flag;
-        if (flag == 1)
-        {
-            cout << "ROLE: ";
-            cin >> role;
-            users[i] = User(id, name, password, role);  //*constructor args being passed
-        }
-        else
-        {
-            users[i] = User(id, name, password);
-        }
-        cout << "----------------------------\n";
-    }
-
-
-* printing
-*here we print using syntax --> obj_name[i].att_name
-    for (int i = 0; i < n; i++)
-    {
-        cout << "User " << i + 1 << ":\n";
-        cout << "ID: " << users[i].id << "\n";
-        cout << "Name: " << users[i].name << "\n";
-        cout << "Password: " << users[i].password << "\n";
-        cout << "Role: " << users[i].role << "\n";
-        cout << "----------------------------\n\n";
-    }
-
-    delete[] users;
-}*/
+    return 0;
+}
+*/
 
 /* //! COPY CONSTRUCTORS
-*Default copy constructor = shallow copy
-ClassName(const ClassName &obj);        //* where const keyword and & is important
- Student new_obj = old_obj;             //* then in main calls default copy constructor
 
- *USER-DEFINED DEEP COPY CONSTRUCTOR
- ClassName(const ClassName &obj)
-{
-    //* copy data here
+!         SHALLOW COPY vs DEEP COPY
+Shallow copy — copies the pointer (address) both objects now point to SAME memory
+Deep copy    — copies the data the pointer points to both objects have their OWN separate memory
 
-}
+! 1. SHALLOW COPY — what C++ does by default
+class Routine {
+public:
+    int    count;
+    int   *data;          // pointer to heap memory
+
+    Routine(int n) {
+        count = n;
+        data  = new int[n];
+    }
+};
+
+Routine A(3);             // A.data ──► [ 10 | 20 | 30 ]  (on heap)
+A.data[0] = 10;
+A.data[1] = 20;
+A.data[2] = 30;
+
+Routine B = A;            // default copy constructor fires — SHALLOW
+
+   ? What just happened in memory:
+
+     A.data ──────────────────► [ 10 | 20 | 30 ]
+                                         ▲
+     B.data ──────────────────────────── ┘
+
+     B.data is not a copy of the array. B.data is a copy of the ADDRESS. both point to the SAME block
+
+B.data[0] = 99;           // you think you're changing B only you just changed A.data[0] too — same memory
+
+   ? THE DISASTER:
+delete[] A.data;          // frees the memory
+delete[] B.data;          // double delete — undefined behavior, crash B.data still points to freed memory
+
+
+   ! 2. DEEP COPY — user-defined constructor
+class Routine {
+public:
+    int  count;
+    int *data;
+
+       ? regular constructor
+    Routine(int n) {
+        count = n;
+        data  = new int[n];
+    }
+
+       ? deep copy constructor
+    Routine(const Routine &other) {
+        count = other.count;
+        data  = new int[count];          // allocate NEW separate block
+        for (int i = 0; i < count; i++)
+            data[i] = other.data[i];     // copy the VALUES, not the address
+    }
+
+       ? destructor — always write this when you have heap memory
+    ~Routine() {
+        delete[] data;
+    }
+};
+
+Routine A(3);
+A.data[0] = 10;
+A.data[1] = 20;
+A.data[2] = 30;
+
+Routine B = A;            // deep copy constructor fires now
+
+   ? What happens in memory:
+     A.data ──► [ 10 | 20 | 30 ]   (block 1)
+
+     B.data ──► [ 10 | 20 | 30 ]   (block 2 — separate allocation)
+
+     two pointers, two blocks, same values
+
+B.data[0] = 99;               only changes B's block. A.data[0] is still 10
+
+delete[] A.data;          // frees block 1 — fine
+delete[] B.data;          // frees block 2 — fine, separate memory
+
+
+   ! COPY CONSTRUCTOR SYNTAX — breakdown
+Routine(const Routine &other)
+            passes by reference — no copy made of other
+            const — guarantees you won't modify the source
+
+   ! SIDE BY SIDE
+     ┌──────────────────┬────────────────────────┬──────────────────────────┐
+     │                  │     Shallow Copy       │       Deep Copy          │
+     ├──────────────────┼────────────────────────┼──────────────────────────┤
+     │ What's copied    │ the address (pointer)  │ the actual data          │
+     │ Separate memory? │ no — shared block      │ yes — own block          │
+     │ Change B affects │ A too                  │ only B                   │
+     │ Delete risk      │ double delete = crash  │ safe, independent        │
+     │ Who writes it    │ compiler (default)     │ you                      │
+     └──────────────────┴────────────────────────┴──────────────────────────┘
+
+   ! THE ONE RULE
+     if your class has a RAW POINTER as a member
+     → always write deep copy constructor + destructor
+
+     if your class has NO pointers (just ints, strings, plain members)
+     → default shallow copy is fine, no shared memory to worry about
+
 *COPY CONSTRUCTOR IS CALLED WHEN object is initialized or copied, a value is passed to a function or a function returns some value.
-*IF CLASS CONTAINS POINTERS:
-int* ptr;
-ptr = obj.ptr;
-----------------------
-int* marks;
-marks = new int[size];      //* need to dynamically allocate memory
-for(int i = 0; i < size; i++)
-    marks[i] = obj.marks[i];
 */
 /*//! SHALLOW COPY WIHTOUT USING ANY COPY CONSTRUCTOR
 class Book
@@ -940,24 +1512,24 @@ int main()
 }
 */
 
-/*//! DEEP COPY EXAMPLE
+/* //! DEEP COPY EXAMPLE
 class Library {
 private:
     int size;
     int* books;
 
 public:
-//* Parameterized constructor
+* Parameterized constructor
     Library(int s) : size(s) {
         books = new int[size];      //* Allocate memory for books
 
-//        * Initialize books with some default values (optional)
+* Initialize books with some default values (optional)
         for (int i = 0; i < size; ++i) {
             books[i] = 0;
         }
     }
 
-    // Destructor
+* Destructor
     ~Library() {
         delete[] books;
     }
@@ -1315,5 +1887,4 @@ for(int i = 0; i < n; i++){
 * for deleting array, add [] in front of delete.
 delete[] gradesptr;
 }
-
 */
