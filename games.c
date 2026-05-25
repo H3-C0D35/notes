@@ -3,13 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-/*
-?   store 1 secret word,
-?   display no dashes,
-?   take input of letter, if correct, replace dash with letter and store it in used words,
-?   if wrong dont do anything, store it in used words and track incorrect tries.
-*/
-// todo             not perfect but ok for pf exam logic
 /*int length(char s[])
 {
     int i = 0;
@@ -90,7 +83,7 @@ int main()
         return 0;
 }*/
 
-//?palindrome
+//?checking palindrome
 /*int length(char s[])
 {
     int i = 0;
@@ -253,6 +246,7 @@ int main()
     }
     return 0;
 }*/
+
 //? reverse using pointers
 /*int length(char s[])
 {
