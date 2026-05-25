@@ -1,9 +1,571 @@
 #include <iostream>
-#include <string>
-#include <cmath>
 #include <fstream>
 #include <cstring>
+#include <string>
+#include <cctype>
 using namespace std;
+
+/* //! FILING
+*ifstream   → file to program     (reading)
+*ofstream   → program to file     (writing)
+*fstream    → both directions
+
+*for filing, include the library. Syntax for creating and editing a file is -->
+ofstream name("filename.txt");
+name << "content";
+*OR
+ofstream name;
+name.open("filename.txt");
+name<<"content";
+
+*for example,
+#include <fstream>
+ofstream file("textfile.txt");
+file <<"my first text/\n";
+
+*to close the file -->
+name.close();
+
+*in classes
+class Filing
+{
+    ofstream file;
+    string fname;
+
+public:
+    Filing(string s) : fname(s)
+    {
+        file.open(fname);
+        if (!file)
+        {
+            cout << "Cannot open file.\n";
+            exit(0);
+        }
+    }
+    void writeData(string message)
+    {
+        if (file.is_open())
+            file << message;
+    }
+    void closefile()
+    {
+        if (file.is_open())
+        {
+            file.close();
+            cout << "File closed\n";
+        }
+    }
+};
+
+int main()
+{
+    Filing h("output.txt");
+    h.writeData("hello my name is anz.\n");
+    h.writeData("im 19 years old.\n");
+    h.closefile();
+}
+*--------------------------------------------
+*ios::app: used to add contents at the end of the file.
+class FileAppender
+{
+    ofstream file;
+    string fname;
+
+public:
+*Constructor used to open the file.
+    FileAppender(string t) : fname(t)
+    {
+        file.open(fname, ios::app);
+        if (!file)
+        {
+            cout << "Could not create file.\n";
+            exit(1);
+        }
+    }
+*Desctructor used to close the file.
+    ~FileAppender()
+    {
+        file.close();
+        cout << "Data written successfully.\n";
+    }
+
+    void append(string text)
+    {
+        file << text;
+    }
+};
+int main()
+{
+    FileAppender f("output.txt");
+    f.append("hello my name is anz\n");
+    f.append("im 19.\n");
+}
+
+?EXERCISE
+int main()
+{
+    string name, email;
+    ofstream file("file.txt", ios::app);
+    cout << "How many users?: ";
+    int users;
+    cin >> users;
+    for (int i = 0; i < users; i++)
+    {
+        cout << "Name: ";
+        cin >> name;
+        cout << "Email: ";
+        cin >> email;
+        file << "Name: " << name << endl
+             << "Email: " << email << endl;
+    }
+    file.close();
+}
+
+*--------------------------------------------
+*cerr is used to write errors in the terminal. cout types content in file while cerr does it in the terminal.
+cerr << "error opening file.\n";
+
+*-------------------------------------------
+//*If doing in classes, have to make constructors, destructors and so forth but in main,
+int main()
+{
+    string line;
+    ifstream file("file.txt");
+    //* line by line
+    while (getline(file, line))
+    {
+    }
+
+    //* word by word
+    while (file >> line)
+    {
+    }
+
+    //* char by char
+    while (file.get(line)){}
+}
+
+*--------------------------------------------
+class FileReader
+{
+    ifstream file;
+
+public:
+    FileReader(const string &name)
+    {
+        file.open(name);
+        if (!file.is_open())
+        {
+            cout << "unable to open file.\n";
+            exit(1);
+        }
+    }
+    ~FileReader()
+    {
+        file.close();
+        cout << "File edited successfully\n";
+    }
+    void display()
+    {
+        string line;
+        if (file.is_open())
+        {
+            while (getline(file, line))
+            {
+                cout << line << endl;
+            }
+        }
+    }
+};
+int main()
+{
+    FileReader f("file.txt");
+    f.display();
+}
+*---------------------------------------------
+* ofstream.write((char *)&variable, sizeof(variable));
+* ifstream.read((char *)&variable, sizeof(variable));
+* in order to read or write raw binary data,
+explain this code
+class Student
+{
+public:
+    int id;
+    char name[50];
+};
+int main()
+{
+    Student s1 = {101, "Abdullah Shaikh"};
+    ofstream outfile("Student.dat", ios::binary);
+    outfile.write((char *)&s1, sizeof(s1));
+    outfile.close();
+
+    Student s2;
+    ifstream infile("student.dat", ios::binary);
+
+    infile.read((char *)&s2, sizeof(s2));
+    infile.close();
+    cout << "ID: " << s2.id<< endl;
+    cout << "Name: " << s2.name<< endl;
+}
+
+*s1 in memory:  [101][A][b][d][u][l][l][a][h]...
+                 ↓
+            written to disk
+                 ↓
+            read from disk
+                 ↓
+*s2 in memory:  [101][A][b][d][u][l][l][a][h]...
+*The variable being different doesn't matter. What matters is what bytes are sitting in that memory at the time of printing.
+
+?EXERCISE
+struct Student
+{
+    char name[50];
+    int id;
+    float gpa;
+};
+int main()
+{
+    int u;
+    Student student;
+    cout << "Number of students: ";
+    cin >> u;
+    ofstream file("Student.dat", ios::binary);
+    for (int i = 0; i < u; i++)
+    {
+        cout << "Name: ";
+        cin >> student.name;
+        cout << "ID: ";
+        cin >> student.id;
+        cout << "GPA: ";
+        cin >> student.gpa;
+        file.write((char *)&student, sizeof(student));
+    }
+
+    file.close();
+
+    ifstream afile("Student.dat", ios::binary);
+    for (int i = 0; i < u; i++)
+    {
+        afile.read((char *)&student, sizeof(student));
+        cout << "Name: " << student.name << " | ID: " << student.id << " | GPA: " << student.gpa << endl;
+    }
+    afile.close();
+}
+
+*-------------------------------------------
+*FILE POINTERS are used to go to a certain position in a binary file.
+*get pointer: track position for reading(ifstream)
+*put pointer: track position for writing(ofstream)
+*use put when you are moving the pointer with the intention of editing its file contents
+
+*infile.tellg()        // tells where the get pointer is right now
+*infile.seekg(pos)     // move get pointer to position pos
+*outfile.tellp()       // tells where the put pointer is right now
+*outfile.seekp(pos)    // move put pointer to position pos
+
+*seekg/seekp are directional and they use the following
+*seekg(n, ios::beg)   // move n bytes from start of file
+*seekg(n, ios::cur)   // move n bytes from current position
+*seekg(n, ios::end)   // move n bytes from end of file (usually n is taken negative here)
+
+?CONCRETE EXAMPLE:
+int n = 2;      //* 0-indexed, so 3rd object
+infile.seekg(n * sizeof(Student), ios::beg);
+infile.read((char*)&s, sizeof(Student));
+*here n*sizeof is taken because each student occupies sizeof(Student) space in the files. for the 3rd student, the space will be 2*sizeof(Student).
+
+? Go to the middle of the file and print 10 lines after it.
+int main()
+{
+    ifstream file("file.txt");
+    int n;
+    file.seekg(0, ios::end);
+    int size = file.tellg();
+
+    file.seekg(size / 2, ios::beg);
+    string line;
+    cout << "LINES: \n";
+    int count = 0;
+    while (getline(file, line) && count < 10)
+    {
+        cout << line << endl;
+        count++;
+    }
+    file.close();
+}
+
+? OpenAIAnthropicGoogleMeta
+? skip first 6 characters and read the next 9 into a buffer and print em.
+int main()
+{
+    ifstream file("file.txt", ios::binary);
+    if (!file)
+    {
+        cerr << "ERROR\n";
+        return 1;
+    }
+    file.seekg(6, ios::beg);
+    char buffer[10] = {0};
+    file.read(buffer, 9);
+    cout.write(buffer, 9);      //* cout<<buffer; but this will stop at \0. but the one i wrote will print exactly 9 bytes.
+}
+
+?Alice090
+?Bobby099
+?Carol100
+?EXERCISE --- edit 075 to 090
+int main()
+{
+    fstream file("file.txt");
+    file.seekp(14, ios::beg);
+    string str = "099";
+    file.write(str.c_str(), str.length()); //*.write() takes in const char* therefore c_str() is used to conver str to char. we can also directy write "099", 3. .length is used in case we dont know the length otherwise just write the length.
+    file.seekg(0, ios::beg);               //*after editing, move to the beginning of the file to print the whole thing
+    string line;
+    while (getline(file, line)) //*if the file contents are written with \n, use getline. otherwise use buffer
+    {
+        cout << line << endl;
+    }
+    //* char buffer[25] = {0}; //* 8*3 + \0 = 25
+    //* file.read(buffer, 24);
+    //* cout.write(buffer, 24);
+}
+
+*---------------------------------------------
+?EXERCISE --- the quick brown fox jumps over teh lazy dog
+? change teh to the.
+
+int main()
+{
+    fstream file("file.txt");
+    string h;
+    streampos pos;
+    while (file >> h)
+    {
+        if (h == "teh")
+            pos = file.tellg() - (streampos)h.length();
+    }
+    string p = "the";
+    *After while loop finishes reading, the stream is in EOF state. When a stream hits EOF, it sets a fail flag — and any operations after that, including seekp and write, silently do nothing.
+    *use clear for this reason.
+    file.clear();
+    file.seekp(pos);
+    file.write(p.c_str(), p.length());
+}
+
+?EXERCISE---  change 18 to 21
+John20
+Jane18
+Jack25
+
+int main()
+{
+    fstream file("file.txt");
+    file.seekp(14, ios::beg);
+    string str = "099";
+    file.write(str.c_str(), str.length()); //*.write() takes in const char* therefore c_str() is used to conver str to char. we can also directy write "099", 3. .length is used in case we dont know the length otherwise just write the length.
+    file.seekg(0, ios::beg);               //*after editing, move to the beginning of the file to print the whole thing
+    string line;
+    while (getline(file, line)) //*if the file contents are written with \n, use getline. otherwise use buffer
+    {
+        cout << line << endl;
+    }
+
+? EXERCISE--- change 30 to 99
+int main()
+{
+
+    fstream file("file.txt");
+    string num;
+    streampos pos;
+    while (true)
+    {
+        pos = file.tellg();
+        file >> num;
+        if (num == "30")
+        {
+            break;
+        }
+    }
+    file.clear();
+
+    file.seekp(pos);
+    file.write(" 99", 3);
+    string line;
+    file.seekg(0, ios::beg);
+    while (getline(file, line))
+    {
+        cout << line << endl;
+    }
+}
+    */
+/*A backup program needs to monitor file size after every log entry.
+Requirements:
+• Accept log messages from the user.
+• Append each to backup_log.txt.
+• After every write, display the current file size using tellp().
+Expected Behaviour:
+User sees how much the file grows with each entry.
+
+int main()
+{
+    fstream file("file.txt", ios::app);
+    string message;
+    int choice;
+    do
+    {
+        cout << "Enter a message: ";
+        getline(cin, message);
+        file << message << endl;
+        streampos pos = file.tellp();
+        cout << pos << endl;
+        cout << "Do you wannt to add more?(1 = yes, 0 = no): ";
+        cin >> choice;
+        cin.ignore();
+    } while (choice == 1);
+}
+
+
+int main()
+{
+    fstream file("file.txt");
+    string line;
+    string word;
+    char c;
+    int linecount = 0;
+    while (getline(file, line))
+    {
+        linecount++;
+    }
+    file.clear();
+    file.seekg(0, ios::beg);
+    int wordcount = 0;
+    while (file >> word)
+    {
+        wordcount++;
+    }
+    file.clear();
+    file.seekg(0, ios::beg);
+    int charcount = 0;
+    while (file.get(c))
+    {
+        charcount++;
+    }
+    file.clear();
+    file.seekg(0, ios::beg);
+    int markcount = 0;
+    while (file.get(c))
+    {
+        if (ispunct(c))
+            markcount++;
+    }
+    file.clear();
+    file.seekg(0, ios::beg);
+    cout << "Line count: " << linecount << "\nWord Count: " << wordcount << "\nChar Count: " << charcount << "\nMark Count: " << markcount << endl;
+}
+
+A file debugger tool lets users jump around a file and inspect contents.
+Requirements:
+• Allow user to input a byte offset.
+• Use seekg() to go there.
+• Read and display the next 100 characters.
+• Show pointer position before and after.
+Expected Behaviour:
+Program behaves like a mini file explorer/debugger.
+int main()
+{
+    fstream file("file.txt");
+    char c;
+    int count = 0;
+    while (file.get(c))
+    {
+        count++;
+    }
+    cout << count << endl;
+    file.clear();
+    file.seekg(0, ios::beg);
+    cout
+        << "Input a byte offset: ";
+    int byte;
+    cin >> byte;
+    file.seekg((streampos)byte, ios::beg);
+    char buffer[101] = {0};
+    file.read(buffer, 100);
+    cout << buffer;
+}
+
+class Student
+{
+public:
+    int roll;
+    string name;
+    int marks;
+
+    void fileInput()
+    {
+        int another;
+        fstream file("file.txt", ios::app);
+        cout << "Enter roll number: ";
+        cin >> roll;
+
+        cout << "Enter name: ";
+        cin.ignore();
+        getline(cin, name);
+
+        cout << "Enter marks: ";
+        cin >> marks;
+        file << "\nRoll number: " << roll << " | Name: " << name << " | Marks: " << marks << endl;
+    }
+    void display()
+    {
+        fstream file("file.txt");
+        string line;
+        cout << "----DETAILS----\n";
+        while (getline(file, line))
+        {
+            cout << line << endl;
+        }
+    }
+};
+int main()
+{
+    // fstream file("file.txt", ios::trunc | ios::in | ios::out);
+    Student student;
+    student.fileInput();
+    student.display();
+}
+
+int main()
+{
+    string quote = "In the middle of difficulty, lies opportunity. ~Albert Einstien";
+    fstream file("file.txt");
+    file << quote << endl;
+    file.seekg(0, ios::beg);
+    streampos pos;
+    string word;
+    while (true)
+    {
+        pos = file.tellg();
+        file >> word;
+        if (word == "middle")
+        {
+            break;
+        }
+    }
+    file.clear();
+    file.seekp(pos);
+    file.write("MIDDLE", 6);
+    file.seekg(0, ios::beg);
+    while (getline(file, quote))
+    {
+        cout << quote << endl;
+    }
+    file.clear();
+    file.seekg(0, ios::beg);
+}
+*/
 
 /* //! OPERATOR OVERLOADING
 *We do this when we want to add objects. since objects dont know what +, - or any of that is, we tell it by making its member functions and passing them in it.
@@ -322,7 +884,6 @@ public:
 
 /* //! FRIEND FUNCTION
  *declared inside class but defined outside as they dont belong to the class. The class decide whom the friends are and then shares its private / protected members with it. This prevents excess getters/setters.
-
  */
 
 /*//! JIST OF INHERITANCE CONCEPTS + POLYMORPHISM
@@ -485,6 +1046,7 @@ int main()
     R.execute();
     return 0;
 }
+    */
 //! ══════════════════════════════THEORY═════════════════════════════════
 
 /* //! LINE ____
@@ -632,8 +1194,6 @@ foo(d, 3);
 
 ? CLEANUP — none, lives on stack, dies when scope ends
 
-
-
 ! ─────────────────────────────────────────────────────────────
 ! 3. Device *d[10] — array of pointers
 !    USE WHEN: polymorphism needed (Light, Camera, Thermostat as Device*)
@@ -681,11 +1241,7 @@ for (int i = 0; i < 3; i++)
   │ Needs delete   │ yes (if new)   │ no              │ yes (if new)                     │
   │ Function param │ Device *d      │ Device *d       │ Device **d  or  Device *d[]      │
   └────────────────┴────────────────┴─────────────────┴──────────────────────────────────┘
-
-! ─────────────────────────────────────────────────────────────
-! THE ONE RULE
-*thing you have IS a pointer  →  use  ->
-*thing you have IS an object  →  use  .
+\\
 */
 
 /* //! INHERITANCE
@@ -884,18 +1440,243 @@ d->turnOn();  //* calls Light::turnOn() if overridden, not Device::turnOn()
 */
 
 /* //! ARRAY OF OBJECTS
- *Can be initialized in two ways:
- *----without default constructor----
-Laptop laptops[] = { Laptop("HP", 8), Laptop("Dell", 16), Laptop("Asus", 32) };
+*  ═══════════════════════════════════════════════════════════════
+*         ARRAY OF OBJECTS — COMPLETE REFERENCE
+*  ═══════════════════════════════════════════════════════════════
 
-*----with default constructor----
-Laptop() : brandname("Unknown"), price(0.0) {};   //*constructor
-Laptop laptops[3];      //* then in main
+*THE 4 WAYS
+*   1. Device d[10]          — stack array of objects
+*   2. Device *d             — heap array of objects (via new)
+*   3. Device *d[10]         — stack array of pointers to objects
+*   4. Device **d            — heap array of pointers (via new)
 
-*default Constructor is Required if the elements of the array need to be automatically initialized without specifying parameters.
-*Explicit Initialization is used If you initialize each object with parameters, then you can avoid the need for a default constructor.
+*  1. Device d[10] — stack array of objects
+*     Objects live on stack. Fixed size. No new, no delete.
+
+* INITIALIZATION
+Device d[3];  //default constructor called 3x
+Device d[3] = {Device("D1","OFF"), Device("D2","OFF"), Device("D3","OFF")}; // explicit init
+
+* ACCESS
+d[0].turnOn();         dot — d[i] gives the object directly
+d[1].getID();
+
+* PASSING TO FUNCTION
+void foo(Device d[], int size);
+void foo(Device *d,  int size);     identical — array decays to pointer
+foo(d, 3);
+
+* MEMORY
+
+   stack
+   ┌──────────┬──────────┬──────────┐
+   │ d[0]     │ d[1]     │ d[2]     │
+   │ Device   │ Device   │ Device   │
+   └──────────┴──────────┴──────────┘
+
+*   2. Device *d — heap array of objects (via new)
+*     Objects live on heap. Size can be decided at runtime.
+
+* INITIALIZATION
+int n = 5;
+Device *d = new Device[n];                 // default constructor called n times | NOTE: Device MUST have default constructor
+
+* ASSIGNING VALUES AFTER
+d[0] = Device("D1", "OFF");
+d[1] = Device("D2", "OFF");
+
+* ACCESS
+d[0].turnOn();         //dot — d[i] gives the object, not a pointer
+d[1].getID();
+
+* PASSING TO FUNCTION
+void foo(Device *d, int size);
+foo(d, n);
+
+* MEMORY
+
+   stack          heap
+   ┌───────┐      ┌──────────┬──────────┬──────────┐
+   │   d   │─────►│  d[0]    │  d[1]    │  d[2]    │
+   │ (ptr) │      │ Device   │ Device   │ Device   │
+   └───────┘      └──────────┴──────────┴──────────┘
+
+* CLEANUP
+delete[] d;            frees entire block — [] is mandatory here
+
+*  3. Device *d[10] — stack array of pointers
+*     Pointers on stack. Objects can be anywhere (stack or heap).
+*     USE WHEN: polymorphism needed.
+
+* INITIALIZATION
+Device *d[10];          10 pointer slots, uninitialized
+Device *d[10] = {};     all nullptr — safe
+
+* POINT TO EXISTING STACK OBJECTS
+Light  L("L1", "OFF");
+Camera C("C1", "OFF");
+d[0] = &L;
+d[1] = &C;
+
+* OR HEAP ALLOCATE EACH SLOT INDIVIDUALLY
+d[0] = new Light("L1",   "OFF");
+d[1] = new Camera("C1",  "OFF");
+d[2] = new Device("D1",  "OFF");
+
+* ACCESS
+d[0]->turnOn();        arrow — d[i] gives a pointer, not the object
+d[1]->getID();
+
+* PASSING TO FUNCTION
+void foo(Device *d[], int size);
+void foo(Device **d,  int size);     identical to compiler
+foo(d, 3);
+
+* MEMORY
+
+   stack
+   ┌────────┬────────┬────────┐
+   │  d[0]  │  d[1]  │  d[2]  │   ← pointers
+   └───┬────┴───┬────┴───┬────┘
+       │        │        │
+       ▼        ▼        ▼
+    [Light]  [Camera]  [Device]    ← objects anywhere in memory
+
+* CLEANUP — only if heap allocated
+for (int i = 0; i < 3; i++)
+    delete d[i];
 
 
+    * 4. Device **d — heap array of pointers (via new)
+*     Both the pointer array AND objects on heap.
+ *    USE WHEN: size of array unknown at compile time + polymorphism.
+
+* INITIALIZATION
+int n = 5;
+Device **d = new Device*[n];       allocates array of n pointers on heap
+for (int i = 0; i < n; i++)
+    d[i] = nullptr;                safe — set all to nullptr
+
+* ASSIGN OBJECTS TO EACH SLOT
+d[0] = new Light("L1",  "OFF");
+d[1] = new Camera("C1", "OFF");
+d[2] = new Device("D1", "OFF");
+
+* ACCESS
+d[0]->turnOn();        arrow — d[i] is a pointer
+d[1]->getID();
+
+* PASSING TO FUNCTION
+void foo(Device **d, int size);
+foo(d, n);
+
+* MEMORY
+
+   stack         heap                    heap
+   ┌───────┐     ┌────────┬────────┬────────┐
+   │   d   │────►│  d[0]  │  d[1]  │  d[2]  │   ← pointer array
+   │ (ptr) │     └───┬────┴───┬────┴───┬────┘
+   └───────┘         │        │        │
+                     ▼        ▼        ▼
+                  [Light]  [Camera] [Device]      ← objects
+
+* CLEANUP — two stages, order matters
+for (int i = 0; i < n; i++)
+    delete d[i];       1. delete each object first
+delete[] d;            2. delete the pointer array itself
+
+
+
+*  SIDE BY SIDE
+
+   ┌─────────────────┬───────────────┬──────────────┬──────────────────┬─────────────────────┐
+   │                 │  Device d[10] │  Device *d   │  Device *d[10]   │     Device **d      │
+   ├─────────────────┼───────────────┼──────────────┼──────────────────┼─────────────────────┤
+   │ Array lives on  │ stack         │ heap         │ stack            │ heap                │
+   │ Objects live on │ stack         │ heap         │ stack or heap    │ heap                │
+   │ Size at runtime │ no            │ yes          │ no               │ yes                 │
+   │ Polymorphism    │ no            │ no           │ yes              │ yes                 │
+   │ Access syntax   │ d[i].         │ d[i].        │ d[i]->           │ d[i]->              │
+   │ delete needed   │ no            │ delete[] d   │ delete d[i]      │ delete d[i] + []d   │
+   │ Function param  │ Device *d     │ Device *d    │ Device **d       │ Device **d          │
+   └─────────────────┴───────────────┴──────────────┴──────────────────┴─────────────────────┘
+
+  THE ONE RULE (same as before)
+   d[i] gives an object  →  dot    ( Device d[]  and  Device *d  )
+   d[i] gives a pointer  →  arrow  ( Device *d[] and  Device **d )
+
+  WHEN TO USE WHICH
+   fixed size + no polymorphism + simple          →  Device d[10]
+   dynamic size + no polymorphism                 →  Device *d  (new)
+   fixed size + polymorphism                      →  Device *d[10]
+   dynamic size + polymorphism                    →  Device **d (new)
+
+?EXERCISE---
+class Person
+{
+    string name;
+    int age;
+
+public:
+    Person() : name(""), age(0) {}
+    Person(string n, int a) : name(n), age(a) {}
+    virtual void display()
+    {
+        cout << "Name: " << name << " | Age: " << age;
+    }
+};
+class Student : public Person
+{
+    int id;
+    int gpa;
+
+public:
+    Student(string n, int a, int id, int gpa) : Person(n, a), id(id), gpa(gpa) {}
+    void display() override
+    {
+        Person::display();
+        cout << " | ID: " << id << " | GPA: " << gpa << endl;
+    }
+};
+
+class Teacher : public Person
+{
+    string subject;
+    int salary;
+
+public:
+    Teacher(string n, int a, string sub, int salary) : Person(n, a), subject(sub), salary(salary) {}
+    void display() override
+    {
+        Person::display();
+        cout << " | Subject: " << subject << " | Salary: " << salary << endl;
+    }
+};
+
+int main()
+{
+    Person *p[2];
+ p[0] = new Student("Sara", 17, 101, 3.4);
+ p[1] = new Teacher("ALi", 34, "Physics", 34555);
+
+* OR
+Student s1("Sara", 17, 101, 3.4);
+Teacher t1("ALi", 34, "Physics", 34555);
+p[0] = &s1;
+p[1] = &t1;
+
+ *OR
+ Person *p1[] = {&s1, &t1};
+
+ *----display(for first and third method only, use delete)---
+ for (int i = 0; i < 2; i++)
+    {
+        p[i]->display();
+    }
+    for (int i = 0; i < 2; i++)
+    {
+        delete p[i];
+    }
  */
 
 /* //! COMPOSITION AND AGGREGATION
@@ -910,7 +1691,7 @@ class Student {
 public:
     int id;
     string name;
-    Laptop *L; //* Pointer to a Laptop
+    Laptop *L;  * Pointer to a Laptop
 
     Student(int id, string name, Laptop *Lap) {
         this->id = id;
@@ -1098,9 +1879,6 @@ public:
     string name;
     string password;
     string role;
-
-    User() : id(0), name(""), password(""), role("Guest") {}
-
     User(int id, string name, string password)
         : id(id), name(name), password(password), role("Guest") {}
 
@@ -1428,7 +2206,6 @@ int main()
     b2.display();
 }
 */
-
 /* //! DEEP COPY EXAMPLE
 class Library {
 private:
@@ -1567,51 +2344,6 @@ int main()
     cout << "age: " << s2.age << endl;
     cout << "gpa: " << s2.gpa << endl;
 }
-/*
-? A school wants to print report cards for different types of students. Create a base class Student with a variable name and a virtual
-? function showResult() that prints"General student result".Create a derived class ScienceStudent that
-? overrides showResult() to print "Science studentresult: Physics-90, Chemistry-85".
-?Create another derived class ArtsStudent that overrides showResult() to print "Arts studentresult: History-88, Literature-92".
-?Task:Create objects for ScienceStudent and ArtsStudent. Use a Student* pointer array to call showResult() for each student.
-class Student
-{
-public:
-    int var;
-    virtual void showresult()
-    {
-        cout << "General student result\n";
-    }
-};
-class sci_Student : public Student
-{
-public:
-    void showresult() override
-    {
-        cout << "Science studentresult: Physics-90, Chemistry-85\n";
-    }
-};
-class art_student : public Student
-{
-public:
-    void showresult() override
-    {
-        cout << "Arts studentresult: History-88, Literature-92\n";
-    }
-};
-int main()
-{
-    Student *s;
-    sci_Student s1;
-    art_student s2;
-    s = &s1;
-    s->showresult();
-
-    s = &s2;
-    s->showresult();
-
-    return 0;
-}
-
 /*
 ? Create a class Car with the following private data members:
 ? string brand
@@ -1756,6 +2488,52 @@ int main() {
   a->sound(); //* Outputs: Dog barks
   return 0;
 }
+
+?EXERCISE---
+? A school wants to print report cards for different types of students. Create a base class Student with a variable name and a virtual
+? function showResult() that prints"General student result".Create a derived class ScienceStudent that
+? overrides showResult() to print "Science studentresult: Physics-90, Chemistry-85".
+?Create another derived class ArtsStudent that overrides showResult() to print "Arts studentresult: History-88, Literature-92".
+?Task:Create objects for ScienceStudent and ArtsStudent. Use a Student* pointer array to call showResult() for each student.
+class Student
+{
+public:
+    int var;
+    virtual void showresult()
+    {
+        cout << "General student result\n";
+    }
+};
+class sci_Student : public Student
+{
+public:
+    void showresult() override
+    {
+        cout << "Science studentresult: Physics-90, Chemistry-85\n";
+    }
+};
+class art_student : public Student
+{
+public:
+    void showresult() override
+    {
+        cout << "Arts studentresult: History-88, Literature-92\n";
+    }
+};
+int main()
+{
+    Student *s;
+    sci_Student s1;
+    art_student s2;
+    s = &s1;
+    s->showresult();
+
+    s = &s2;
+    s->showresult();
+
+    return 0;
+}
+
   */
 
 /* //! WITHOUT VIRTUAL
@@ -1786,8 +2564,6 @@ int main() {
 ! syntax for DMA --> pointer_name = new return_type 'or' return_type[size];
 int main(){
 char *gradesptr = NULL; //good practice to first take it as null
-
-*size
 int n;
 cout<<"How many grades do u want: "   ;
 cin>>n;
