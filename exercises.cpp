@@ -1,6 +1,551 @@
+
 #include <iostream>
-#include <vector>
+#include <cmath>
+#include <cstring>
 using namespace std;
+
+/* //! ENCAPSULATION + CONSTRUCTORS + STATIC + CONST + INLINE + HAS A + IS A + VIRTUAL + DIAMOND PROBLEM + FRIEND CLASS N FUNCTION + OPERATOR OVERLOADING + ARRAY OF OBJECTS
+?Data members (private where applicable):  Person (private): string name; int age;
+? Patient (derived from Person, protected where needed): int patientID; static int totalPatients; const string disease;
+? Room (private):int roomNo; float bedChargesPerDay;
+? Staff hierarchy (protected where needed): In Staff: string staffName;
+
+?1. Implement Person with Encapsulation and Object Basic
+?Design the Person class using encapsulation: keep data members private and provide setters/getters (use this pointer inside setters). o Implement three constructors:  Default: initializes to "Unknown" and 0  Parameterized: accepts name and age  Copy constructor: performs deep copy and prints a message like "Person Copy Constructor Called" o Implement a destructor that prints a message when a Person object is destroyed. o Write a standalone friend function printPersonSummary(const Person&) that can access and display private data (demonstrating data hiding with controlled access).
+
+?2. Implement Patient with Constructors, Static, Const, Member Initialization
+?Create a class Patient that inherits from Person and has a HAS-A relationship with Room. o Add: int patientID;, static int totalPatients;, and const string disease; o Use a member initialization list in the parameterized constructor to initialize disease. o Provide:  Default constructor  Parameterized constructor: (name, age, patientID, disease, Room)  Copy constructor that also increases totalPatients o Implement a destructor that prints "Patient object destroyed: ID ..." o Implement a member function showInfo() to display full patient details and call room.showRoom(). o Implement a static function getPatientCount() that returns total number of Patient objects created.
+
+?3. Implement Room and Demonstrate HAS-A + Inline Function
+?Implement a separate Room class with roomNo and bedChargesPerDay. o Provide a constructor that initializes both members. o Implement an inline function showRoom() that prints room details. o In Patient, include a Room object as a data member and a function assignRoom(const Room&) to update the assigned room. o Show how a Patient has-a Room by using Room inside Patient::showInfo().
+
+?4. EmergencyPatient, AdmittedPatient, SurgicalPatient: Inheritance, Overriding & Polymorphism
+?Using Patient as base, design specialized patient types: o EmergencyPatient (single inheritance): overrides showInfo() and prints a heading like "[Emergency Patient - Critical Case]" before calling Patient::showInfo(). o AdmittedPatient:  Inherits from Patient  Adds a double currentBill;  Implements double calculateBill(int days) that multiplies days by room charges and stores in currentBill.  Overrides showInfo() to also display the current bill. o SurgicalPatient:  Inherits from EmergencyPatient (multilevel inheritance)  Overrides showInfo() again, printing "[Surgical Patient - Operation Scheduled]" and then base info. In main(), use a Patient* pointer to point to different derived objects (EmergencyPatient, AdmittedPatient, SurgicalPatient) and call showInfo() to demonstrate runtime polymorphism.
+
+?5. Operator Overloading and Friend Class for Admin Control
+? o In AdmittedPatient, overload the + operator to sum the currentBill of two AdmittedPatient objects and return a new AdmittedPatient with combined bill. o Create a friend class HospitalAdmin that can modify a patient’s room and charges by accessing appropriate functions. Implement a member function changeRoom(Patient&, int newRoomNo, float newCharges) that updates the patient’s Room. o In main(), show:  Calculation of bills for two admitted patients  Use of + operator to get a combined bill  Use of HospitalAdmin to change the room of a patient and then display updated info.
+
+?6. Multiple Inheritance, Diamond Problem & Virtual Functions with Staff
+?Model hospital staff and surgical teams: o Create a base class Staff with string staffName; and a virtual function performDuty(). o Create Doctor and Nurse classes that virtually inherit from Staff and override performDuty() with role-specific messages. o Create a SurgicalTeam class that inherits from both Doctor and Nurse and overrides performDuty() to represent combined surgical duties. o In main(), create a SurgicalTeam object, store its address in a Staff* pointer, and call performDuty() to demonstrate correct resolution of the diamond problem using virtual inheritance and virtual functions.
+
+?7. Integration & Testing in main()
+?In main() you must: o Create Person and Patient objects using default, parameterized, and copy constructors. o Create an array of Patient objects to show array of objects usage. o Assign Room objects to patients (HAS-A relation). o Demonstrate static count via Patient::getPatientCount(). o Use Patient* and Staff* pointers to demonstrate polymorphism with overridden functions.
+
+class Person
+{
+    string name;
+    int age;
+
+public:
+    //* default
+    Person() : name("Unknown"), age(0) {}
+    //* para
+    Person(string n, int a) : name(n), age(a) {}
+
+    //* deep copy to print text
+    //* just because this deep copy was asked to print text, doesnt it mean it wont copy data as well.
+    Person(const Person &obj)
+    {
+        name = obj.name;
+        age = obj.age;
+        cout << "Person Copy Constructor Called.\n";
+    }
+    //* destructor to print message
+    ~Person()
+    {
+        cout << "Destructor called.\n";
+    }
+    string getname() { return name; }
+    int getage() { return age; }
+    //* friend to print details
+    friend void printPersonSummary(const Person &);
+};
+//* friend func
+void printPersonSummary(const Person &p)
+{
+    cout << "Name: " << p.name << endl
+         << "Age: " << p.age << endl;
+}
+
+class Room
+{
+    int roomNo;
+    float bedChargesPerDay;
+
+public:
+    Room() : roomNo(0), bedChargesPerDay(0.0) {}
+    Room(int roomno, float bedcharges) : roomNo(roomno), bedChargesPerDay(bedcharges) {}
+
+    //* setter
+    void setroomno(int r) { roomNo = r; }
+    void setbed(float b) { bedChargesPerDay = b; }
+
+    inline void showRoom()
+    {
+        cout << "Room No: " << roomNo << endl
+             << "Bed Charges Per Day: " << bedChargesPerDay << endl;
+    }
+};
+
+class HospitalAdmin;
+class Patient : public Person // Person inherits Patient
+{
+protected:
+    int patientID;
+    //* static will be incremented in both para & copy constructors
+    static int totalPatients;
+    const string disease;
+    Room r;
+
+public:
+    Patient() : patientID(0) {}
+    Patient(string name, int age, int id, string d, Room r) : Person(name, age), patientID(id), disease(d), r(r)
+    {
+        totalPatients++;
+    }
+
+    Patient(const Patient &obj) : patientID(obj.patientID), disease(obj.disease), r(obj.r)
+    {
+        totalPatients++;
+    }
+
+    ~Patient()
+    {
+        cout << "Patient object destroyed.\nID: " << patientID << endl;
+        totalPatients--;
+    }
+    virtual void showInfo()
+    {
+        cout << "Patient Name: " << getname() << endl
+             << "Patient Age: " << getage() << endl
+             << "Patient ID: " << patientID << endl
+             << "Patient Disease: " << disease << endl;
+        r.showRoom();
+    }
+    void assignRoom(Room &room)
+    {
+        int newno;
+        float charge;
+        cout << "Enter new room number: ";
+        cin >> newno;
+        cout << "Enter charges: ";
+        cin >> charge;
+        room.setroomno(newno);
+        room.setbed(charge);
+    }
+    static void getPatientCount()
+    {
+        cout << "Total Patients: " << totalPatients << endl;
+    }
+    friend class HospitalAdmin;
+};
+
+int Patient::totalPatients = 0;
+
+class EmergencyPatient : public Patient
+{
+public:
+    EmergencyPatient() {}
+    EmergencyPatient(string name, int age, int id, string d, Room r) : Patient(name, age, id, d, r) {}
+
+    void showInfo() override
+    {
+        cout << "[Emergency Patient - Critical Case]\n";
+        Patient::showInfo();
+    }
+};
+class AdmittedPatient : public Patient
+{
+    double currentbill;
+
+public:
+    AdmittedPatient() : currentbill(0.0) {}
+    AdmittedPatient(string name, int age, int id, string d, Room r, double currentbill) : Patient(name, age, id, d, r), currentbill(currentbill) {}
+    double getbill() { return currentbill; }
+    double calculateBill(int days)
+    {
+        double roomCharges = 19.9;
+        currentbill = days * roomCharges;
+        return currentbill;
+    }
+
+    AdmittedPatient operator+(const AdmittedPatient &obj)
+    {
+        AdmittedPatient a;
+        a.currentbill = this->currentbill + obj.currentbill;
+        return a;
+    }
+
+    void showInfo() override
+    {
+        cout << "[Admitted Patient]\n";
+        Patient::showInfo();
+        cout << "Bill: " << currentbill << endl;
+    }
+};
+class SurgicalPatient : public EmergencyPatient
+{
+public:
+    SurgicalPatient() {}
+    SurgicalPatient(string name, int age, int id, string d, Room r) : EmergencyPatient(name, age, id, d, r) {}
+
+    void showInfo() override
+    {
+        cout << "[Surgical Patient - Operation Scheduled]\n";
+        Patient::showInfo();
+    }
+};
+
+class HospitalAdmin
+{
+public:
+    void changeRoom(Patient &p, int newRoomNo, float newCharges)
+    {
+        p.r.setroomno(newRoomNo);
+        p.r.setbed(newCharges);
+        cout << "Room changed\n\n";
+    }
+};
+
+class Staff
+{
+protected:
+    string staffName;
+
+public:
+    Staff() : staffName("Unknown") {}
+    Staff(string name) : staffName(name) {}
+    virtual void performDuty()
+    {
+        cout << staffName << " performs staff duty.\n";
+    }
+};
+class Doctor : virtual public Staff
+{
+public:
+    Doctor() {}
+    Doctor(string name) : Staff(name) {}
+    void performDuty() override
+    {
+        cout << staffName << " performs doctor duty.\n";
+    }
+};
+class Nurse : virtual public Staff
+{
+public:
+    Nurse() {}
+    Nurse(string name) : Staff(name) {}
+
+    void performDuty() override
+    {
+        cout << staffName << " performs Nurse duty.\n";
+    }
+};
+class SurgicalTeam : public Doctor, public Nurse
+{
+public:
+    SurgicalTeam() {}
+    SurgicalTeam(string name) : Staff(name), Doctor(name), Nurse(name) {}
+    void performDuty() override
+    {
+        cout << staffName << " performs surgical duties.\n";
+    }
+};
+int main()
+{
+    Person person1;
+    Person person2("Sara", 45);
+    Person person3(person2);
+    printPersonSummary(person3);
+    cout << endl;
+    Room r1(1, 12.99);
+    Room r2(2, 12.99);
+    Room r3(3, 15.99);
+    Room r4(4, 12.99);
+    EmergencyPatient p1("John", 34, 101, "Cancer", r1);
+
+    AdmittedPatient p2("Doe", 50, 102, "AIDS", r2, 20);
+    p2.calculateBill(3);
+
+    AdmittedPatient p3("Barack", 50, 103, "AIDS", r3, 80);
+    p3.calculateBill(3);
+
+    AdmittedPatient final(p2 + p3);
+    cout << "OPERATOR OVERLOADED BILL: " << final.getbill() << endl;
+    SurgicalPatient p4("Alice", 24, 104, "Epilepsy", r4);
+
+    HospitalAdmin admin;
+    admin.changeRoom(p3, 2, 12.99);
+
+    Patient *P[] = {&p1, &p2, &p3, &p4};
+
+    for (int i = 0; i < 4; i++)
+    {
+        P[i]->showInfo();
+        cout << endl;
+    }
+    Patient::getPatientCount();
+    cout << endl;
+
+    SurgicalTeam s("Doctor Brown");
+    Staff *staff = &s;
+    staff->performDuty();
+    cout << endl;
+}*/
+
+/* //! INHERITANCE + PURE VIRTUAL + ADVANCED OPERATOR OVERLOADING + DMA + HAS-A
+?EXERCISE
+?Entity Class – Base Class
+?Your base class must include:
+?Attribute: id (int), Parameterized constructor to initialize the id, void displayDetails() — pure virtual function, virtual void addRelationship(int id, string type) — manages relations such as “studentFriend”, “groupMember”, etc., by checking the type
+
+?Student Class – Derived from Entity
+?Attributes: string name, string rollNumber, Array of Student IDs (stores classmates or study partners), Array of StudyGroup IDs (groups the student belongs to), Array of LearningPost objects (posts created by the student)
+?Requirements: A parameterized constructor that also initializes all arrays, Override displayDetails() to show all class information | Override addRelationship(int id, string type), If type = "studentFriend": Add the student ID to the friends array, Only if not already added and array has space, Overload += to add a StudyGroup (ID) to the groups array, Overload + to add a LearningPost to the posts array
+
+?LearningPost Class
+?Attributes: string content, Array of comments (strings), likes (int)
+?Requirements: Parameterized constructor that initializes comments array | addLikes() increments the likes count | Override displayDetails() to print post content, likes, and all comments | Overload ++ operator to insert a new comment into the post
+
+?StudyGroup Class – Derived from Entity
+?Attributes: string groupName| string subject | Array of student IDs (members of the group)
+?Requirements: Parameterized constructor initializing all attributes and arrays | Override addRelationship(int id, string type) | If type = "groupMember" | Add student ID to members array| Only if not already added and array has space| Override displayDetails() to show full group details and member list
+
+//*the way DMA is used is by declaring capacity of the array member as a member in the class and holding it const (tho it may give error in some places).
+//*Then declaring another var to track count. this count makes easier to use for loops and ifs.
+//*The DMA for these arrays / array of objs is done in the constructor.
+*SYNTAX :
+class Entity //*Parent class for holding pure virtual funcs.
+{
+protected:
+    int id;
+
+public:
+    Entity() {}
+    Entity(int id) : id(id) {}
+    virtual void displayDetails() = 0;
+    virtual void addRelationship(int id, string type) = 0;
+};
+
+class LearningPost
+{
+    string content;
+    string *comments;
+    int commentcount = 0;
+    int ccapacity = 10;
+    int likes;
+
+public:
+    LearningPost() : content(""), likes(0), commentcount(0)
+    {
+        comments = new string[ccapacity];
+    }
+
+    LearningPost(string c, int l) : content(c), likes(l)
+    {
+        comments = new string[ccapacity];
+    }
+
+    ~LearningPost() { delete[] comments; }
+
+    int addLikes()
+    {
+        return likes++;
+    }
+
+    void displayDetails()
+    {
+        cout << "Content: " << content << endl
+             << "Likes: " << likes << endl;
+        for (int i = 0; i < commentcount; i++)
+        {
+            cout << "Comment: " << comments[i] << endl;
+        }
+    }
+
+    LearningPost &operator++()
+    {
+        string newComment;
+        cout << "Enter new comment: ";
+        getline(cin, newComment);
+        if (commentcount < ccapacity)
+        {
+            comments[commentcount] = newComment;
+            commentcount++;
+        }
+        else
+        {
+            cout << "Comment capacity reached.\n";
+        }
+        return *this;
+    }
+};
+
+class Student : public Entity
+{
+    string name;
+    string rollNumber;
+    int *studentID;
+    const int scapacity = 10;
+    int studentsize = 0;
+
+    int *studyGroupID;
+    int groupsize = 0;
+    const int gcapacity = 10;
+    LearningPost *l; // arr of objs
+    const int postcapacity = 10;
+    int postcount = 0;
+
+public:
+    Student() {}
+    Student(int id, string name, string rN) : Entity(id), name(name), rollNumber(rN)
+    {
+        studentID = new int[scapacity];
+        studyGroupID = new int[gcapacity];
+        l = new LearningPost[postcapacity];
+    }
+        ~Student() {
+    delete[] studentID;
+    delete[] studyGroupID;
+    delete[] l;
+}
+    void displayDetails() override
+    {
+        cout << "ID: " << id << endl
+             << "Name: " << name << endl
+             << "Roll Number: " << rollNumber << endl;
+        for (int i = 0; i < studentsize; i++)
+        {
+            cout << "Student ID " << i + 1 << ": " << studentID[i];
+        }
+        for (int i = 0; i < groupsize; i++)
+        {
+            cout << "Study Group ID " << i + 1 << ": " << studyGroupID[i];
+        }
+        // learning post
+    }
+    void addRelationship(int id, string type) override
+    {
+        for (int i = 0; i < studentsize; i++)
+        {
+            if (studentID[i] == id)
+            {
+                cout << "Already added.\n";
+                return;
+            }
+        }
+
+        if (studentsize < scapacity)
+        {
+
+            if (type == "studentFriend")
+            {
+                studentID[studentsize] = id;
+                studentsize++;
+                cout << "ID added.\n";
+            }
+        }
+        else
+        {
+            cout << "Limit exceeded.\n";
+        }
+    }
+
+    Student &operator+=(int groupId)
+    {
+        for (int i = 0; i < groupsize; i++)
+        {
+            if (studyGroupID[i] == groupId)
+            {
+                cout << "Already added.\n";
+                return *this;
+            }
+        }
+        if (groupsize < gcapacity)
+        {
+            studyGroupID[groupsize] = groupId;
+            groupsize++;
+        }
+        return *this; // usage: arr+=5
+    }
+
+    Student &operator+(const LearningPost &post)
+    {
+        if (postcount < postcapacity)
+        {
+            l[postcount] = post;
+            postcount++;
+        }
+        return *this;
+    }
+};
+class StudyGroup : public Entity
+{
+    string groupName;
+    string subject;
+    int *ID;
+    const int idcapacity = 10;
+    int idsize = 0;
+public:
+    StudyGroup(int i, string gN, string s) : Entity(i), groupName(gN), subject(s)
+    {
+        ID = new int[idcapacity];
+    }
+
+    ~StudyGroup() { delete[] ID; }
+
+    void addRelationship(int id, string type) override
+    {
+        if (idsize < idcapacity)
+        {
+            if (type == "groupMember")
+            {
+                ID[idsize] = id;
+                idsize++;
+                cout << "ID added.\n";
+            }
+            else
+            {
+                cout << "Type dont match.\n";
+            }
+        }
+        else
+        {
+            cout << "Limit reached.\n";
+        }
+    }
+    void displayDetails() override
+    {
+        cout << "Group Name: " << groupName << endl
+             << "Subject: " << subject << endl;
+        for (int i = 0; i < idsize; i++)
+        {
+            cout << "ID: " << ID[i] << endl;
+        }
+    }
+};
+
+int main()
+{
+    Student s1(101, "Sara", "25K-0678");
+    StudyGroup g1(102, "GROUP E", "Physics");
+    LearningPost l1("AP Notes", 200);
+    s1.addRelationship(101, "studentFriend");
+    g1.addRelationship(102, "groupMember");
+    s1 += 102; //* adds group ID 102 to student's groups
+    s1 + l1;   //* adds l1 post to student's posts
+    ++l1;      //* adds a comment to l1
+//*  s1 += 102 calls s1.operator+=(102)
+//* s1 + l1 calls s1.operator+(l1)
+//* ++l1 calls l1.operator++()
+    s1.displayDetails();
+    cout << endl;
+    g1.displayDetails();
+    cout << endl;
+    l1.displayDetails();
+}
+*/
+
 /* //! DIAMOND PROBLEM INHERITANCE + VIRTUAL + ARRAY TO POINTER OBJECTS
 class Device
 {
@@ -365,770 +910,6 @@ for (int i = 0; i < 3; i++)
 *thing you have IS a pointer  →  use  ->
 *thing you have IS an object  →  use  .
 */
-
-/* //! ALL MID 1 CONCEPTS
-
-#define MAX_VEHICLES 100
-#define MAX_LISTING 100
-#include <iostream>
-#include <string>
-using namespace std;
-
-class Vehicle
-{
-    int vehicleID;
-    string brand;
-    string model;
-    int year;
-    double price;
-    double mileage;
-    bool isauto;
-
-public:
-    Vehicle() : vehicleID(0) {}
-    Vehicle(int id, string brand, string model, int year, double price, double mileage, bool isauto) : vehicleID(id), brand(brand), model(model), year(year), price(price), mileage(mileage), isauto(isauto) {}
-    Vehicle(const Vehicle &obj)
-        : vehicleID(obj.vehicleID),
-          brand(obj.brand),
-          model(obj.model),
-          year(obj.year),
-          price(obj.price),
-          mileage(obj.mileage),
-          isauto(obj.isauto)
-    {
-    }
-    int getVehicleID() const
-    {
-        return vehicleID;
-    }
-
-    string getbrand() const
-    {
-        return brand;
-    }
-    string getmodel() const
-    {
-        return model;
-    }
-    int getyear() const
-    {
-        return year;
-    }
-    double getprice() const
-    {
-        return price;
-    }
-    void setprice(double p)
-    {
-        price = p;
-    }
-    double getmileage() const
-    {
-        return mileage;
-    }
-
-    void showSpecs() const
-    {
-        cout << "\n-------DETAILS-------\n";
-        cout << "Vehicle ID: " << vehicleID << endl;
-        cout << "Brand: " << brand << endl;
-        cout << "Model: " << model << endl;
-        cout << "Year: " << year << endl;
-        cout << "Price: " << price << endl;
-        cout << "Mileage: " << mileage << endl;
-        cout << "AUTOMATIC: " << (isauto ? "YES" : "NO") << endl;
-    }
-};
-class User
-{
-    const int userID;
-    int userNumber;
-    string username, password;
-    string role;
-    static int totalUsers;
-
-public:
-    User() : userID(0), userNumber(0) {}
-
-    User(int id, int num, string name, string password, string role) : userID(id), userNumber(num), username(name), password(password), role(role)
-    {
-        totalUsers++;
-    };
-    static int getTotalUsers()
-    {
-        return totalUsers;
-    }
-    int getUserID() const
-    {
-        return userID;
-    }
-    string getRole() const
-    {
-        return role;
-    }
-    void updateProfile()
-    {
-        int choice;
-        cout << "What do you want to change? \n";
-        cout << "1. Name: \n2. Number\n3. Password\n4. Role\nCHOICE: ";
-        cin >> choice;
-        switch (choice)
-        {
-        case 1:
-            cout << "Enter new Name: ";
-            cin >> username;
-            break;
-
-        case 2:
-            cout << "Enter new number: ";
-            cin >> userNumber;
-            break;
-
-        case 3:
-            cout << "Enter new password: ";
-            cin >> password;
-            break;
-
-        case 4:
-            cout << "Enter new role: ";
-            cin >> role;
-            break;
-
-        default:
-            cout << "INVALID!\n";
-            break;
-        }
-    }
-};
-int User::totalUsers = 0;
-class Listing
-{
-private:
-    int listingID;
-    Vehicle v;     // COMPOSITION
-    User *u;       // AGGREGATION
-    string status; // "pending", "approved", "sold"
-    string postedDate;
-    static int totalListings;
-
-public:
-    Listing() : listingID(0), u(NULL), status("pending"), postedDate("") {}
-    Listing(int id, Vehicle v, User *u, string date) : listingID(id), v(v), u(u), postedDate(date), status("pending")
-    {
-        totalListings++;
-    }
-
-    static int getTotalListings()
-    {
-        return totalListings;
-    }
-
-    Vehicle &getvehicle()
-    {
-        return v;
-    }
-
-    const Vehicle &getvehicle() const
-    {
-        return v;
-    }
-    void publish()
-    {
-        if (status == "pending")
-        {
-            status = "approved";
-            cout << "Listing published successfully.\n";
-        }
-        else
-        {
-            cout << "Listing is already published or sold.\n";
-        }
-    }
-    void markSold()
-    {
-        if (status == "approved")
-        {
-            status = "sold";
-            cout << "Listing marked as sold.\n";
-        }
-        else
-        {
-            cout << "Listing cannot be marked as sold.\n";
-        }
-    }
-    void updateListing(double newprice)
-    {
-        v.setprice(newprice);
-        cout << "Listing price updated successfully.\n";
-    }
-
-    int getListingID() const
-    {
-        return listingID;
-    }
-    string getStatus() const
-    {
-        return status;
-    }
-    void setStatus(string s)
-    {
-        status = s;
-    }
-};
-int Listing::totalListings = 0;
-class Message
-{
-    int messageID;
-    int senderID;
-    int receiverID;
-    string content;
-
-public:
-    Message() {}
-
-    Message(int id, int sender, int receiver, string text)
-        : messageID(id), senderID(sender), receiverID(receiver), content(text) {}
-
-    int getMessageID() const
-    {
-        return messageID;
-    }
-    int getReceiverID() const
-    {
-        return receiverID;
-    }
-
-    int getSenderID() const
-    {
-        return senderID;
-    }
-
-    void display() const
-    {
-        cout << "From: " << senderID << " -> "
-             << "To: " << receiverID << endl;
-        cout << "Message: " << content << endl;
-    }
-};
-
-class Favourites
-{
-    Listing *favListings[20];
-    int favCount;
-    int maxLimit;
-    string categoryName;
-    bool isPrivate;
-
-public:
-    int getFavCount() const
-    {
-        return favCount;
-    }
-    Favourites()
-    {
-        favCount = 0;
-    }
-
-    bool addToFav(Listing &l)
-    {
-        if (favCount >= 20)
-            return false;
-
-        favListings[favCount++] = &l;
-        return true;
-    }
-
-    bool removeFromFav(int listingID)
-    {
-        for (int i = 0; i < favCount; i++)
-        {
-            if (favListings[i]->getListingID() == listingID)
-            {
-                for (int j = i; j < favCount - 1; j++)
-                    favListings[j] = favListings[j + 1];
-
-                favCount--;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    void viewFavs() const
-    {
-        for (int i = 0; i < favCount; i++)
-        {
-            favListings[i]->getvehicle().showSpecs();
-        }
-    }
-};
-
-class Buyer
-{
-
-    double budget;
-    Favourites fav;
-    int totalPurchases;
-    string preferredBrand;
-    bool verifiedBuyer;
-
-public:
-    Buyer() : budget(0) {}
-    Buyer(double b) : budget(b) {}
-
-    double getBudget() const
-    {
-        return budget;
-    }
-
-    bool addtoFavs(Listing &l) // todo VEHICLE OBJ
-    {
-        return fav.addToFav(l);
-    }
-    bool remfromFavs(int listingID)
-    {
-        return fav.removeFromFav(listingID);
-    }
-    void viewFavourites()
-    {
-        fav.viewFavs();
-    }
-};
-class Company
-{
-    const string companyName = "PAKWHEELS";
-
-    Listing *listings[MAX_LISTING];
-    int listingCount;
-
-    User users[50];
-    int userCount;
-
-    Message messages[100];
-    int messageCount;
-
-public:
-    Company()
-    {
-        listingCount = 0;
-        userCount = 0;
-        messageCount = 0;
-    }
-
-    bool addListing(Listing *l)
-    {
-        if (listingCount >= MAX_LISTING)
-            return false;
-
-        listings[listingCount++] = l;
-        return true;
-    }
-
-    Listing *findListing(int listingID)
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-            if (listings[i]->getListingID() == listingID)
-                return listings[i];
-        }
-        return NULL;
-    }
-
-    bool sendMessage(int senderID, int receiverID, string text)
-    {
-        if (messageCount >= 100)
-            return false;
-
-        messages[messageCount++] = Message(messageCount, senderID, receiverID, text);
-        return true;
-    }
-
-    void viewMessages(int userID)
-    {
-        for (int i = 0; i < messageCount; i++)
-        {
-            if (messages[i].getReceiverID() == userID)
-            {
-                messages[i].display();
-            }
-        }
-    }
-
-    void showAllListings() const
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-            listings[i]->getvehicle().showSpecs();
-        }
-    }
-    Listing *getListings()
-    {
-        return *listings;
-    }
-
-    int getListingCount() const
-    {
-        return listingCount;
-    }
-};
-class Seller
-{
-    double sellerRating;
-    bool verifiedStatus;
-    double accountBalance;
-    Listing *sellerListings[50];
-    int listingCount;
-
-public:
-    Seller(double sellerRating, double accountBalance) : sellerRating(sellerRating), accountBalance(accountBalance)
-    {
-        listingCount = 0;
-        verifiedStatus = false;
-    }
-    bool addListing(Listing &l)
-    {
-        if (listingCount >= 50)
-            return false;
-        sellerListings[listingCount] = &l;
-        listingCount++;
-        return true;
-    }
-    bool updateListing(int listingID, double newPrice)
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-
-            if (sellerListings[i]->getListingID() == listingID)
-            {
-                if (sellerListings[i]->getStatus() != "approved")
-                {
-                    cout << "Listing not approved yet.\n";
-                    return false;
-                }
-
-                sellerListings[i]->updateListing(newPrice);
-                return true;
-            }
-        }
-        return false;
-    }
-    bool deleteListing(int listingID)
-    {
-        for (int i = 0; i < listingCount; i++)
-        {
-            if (sellerListings[i]->getListingID() == listingID)
-            {
-                for (int j = i; j < listingCount - 1; j++)
-                {
-                    sellerListings[j] = sellerListings[j + 1];
-                }
-                listingCount--;
-                return true;
-            }
-        }
-        return false;
-    }
-    bool respondToMessage(Company &c, int sellerID, int buyerID, string reply)
-    {
-        return c.sendMessage(sellerID, buyerID, reply);
-    }
-};
-
-class Admin
-{
-    int adminLevel;
-    bool permissions;
-    int totalApprovedListing;
-    string adminName;
-    int yearsOfService;
-    bool superAdmin;
-
-public:
-    Admin(int adminlvl, bool perms, int TAL) : adminLevel(adminlvl), permissions(perms), totalApprovedListing(TAL) {}
-
-    bool approveListing(Company &c, int listingID)
-    {
-        Listing *l = c.findListing(listingID);
-
-        if (l && l->getStatus() == "pending")
-        {
-            l->setStatus("approved");
-            totalApprovedListing++;
-            return true;
-        }
-
-        return false;
-    }
-    bool removeListing(Company &c, int listingID)
-    {
-        Listing *l = c.findListing(listingID);
-
-        if (l)
-        {
-            l->setStatus("removed");
-            return true;
-        }
-
-        return false;
-    }
-
-    bool banUsers(User users[], int size, int id)
-    {
-        for (int i = 0; i < size; i++)
-        {
-            if (users[i].getUserID() == id)
-            {
-                cout << "User " << id << " banned.\n";
-                return true;
-            }
-        }
-        return false;
-    }
-};
-
-class Search
-{
-public:
-    static void searchByBrand(Listing l[], int count, const string &brand)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getbrand() == brand)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-
-    static void searchByModel(Listing l[], int count, const string &model)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getmodel() == model)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-
-    static void searchByYear(Listing l[], int count, int year)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getyear() == year)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-
-    static void searchByPrice(Listing l[], int count, double maxPrice)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getprice() <= maxPrice)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-
-    static void searchByMileage(Listing l[], int count, double maxMileage)
-    {
-        for (int i = 0; i < count; i++)
-        {
-            if (l[i].getvehicle().getmileage() <= maxMileage)
-            {
-                l[i].getvehicle().showSpecs();
-            }
-        }
-    }
-};
-
-int main()
-{
-    int id, num;
-    string name, password, role;
-
-    cout << "Enter User ID: ";
-    cin >> id;
-    cout << "Enter Number: ";
-    cin >> num;
-    cout << "Enter Username: ";
-    cin >> name;
-    cout << "Enter Password: ";
-    cin >> password;
-    cout << "Enter Role (buyer/seller/admin): ";
-    cin >> role;
-
-    User u1(id, num, name, password, role);
-
-    Company company;
-
-    // Vehicles
-
-    Vehicle v1(1, "Toyota", "Corolla", 2020, 4500000, 30000, false);
-    Vehicle v2(2, "Mercedes", "Benz", 2020, 7600000, 40000, true);
-    Vehicle v3(3, "Toyota", "Alto", 1999, 200000, 10000, false);
-    // Listings
-    Seller s1(4.5, 100000);
-    Listing l1(101, v1, &u1, "12/3/2026");
-    Listing l2(102, v2, &u1, "13/3/2026");
-
-    company.addListing(&l1);
-    company.addListing(&l2);
-
-    Buyer buyerObj(5000000);
-    Seller sellerObj(4.5, 100000);
-    Admin adminObj(1, true, 0);
-
-    int choice;
-
-    do
-    {
-        cout << "\n------ MENU ------\n";
-        cout << "1. Search Listings\n";
-        cout << "2. Add to Favourites\n";
-        cout << "3. Send Message\n";
-        cout << "4. Approve Listing\n";
-        cout << "5. Exit\n";
-        cout << "Choice: ";
-        cin >> choice;
-
-        if (role == "buyer")
-        {
-            switch (choice)
-            {
-            case 1:
-            {
-                int searchChoice;
-                cout << "1.Brand\n2.Model\n3.Year\n4.Price\n5.Mileage\nChoice: ";
-                cin >> searchChoice;
-
-                switch (searchChoice)
-                {
-                case 1:
-                {
-                    string brand;
-                    cout << "Enter brand: ";
-                    cin >> brand;
-                    Search::searchByBrand(company.getListings(), company.getListingCount(), brand);
-                    break;
-                }
-                case 2:
-                {
-                    string model;
-                    cout << "Enter model: ";
-                    cin >> model;
-                    Search::searchByModel(company.getListings(), company.getListingCount(), model);
-                    break;
-                }
-                case 3:
-                {
-                    int year;
-                    cout << "Enter year: ";
-                    cin >> year;
-                    Search::searchByYear(company.getListings(), company.getListingCount(), year);
-                    break;
-                }
-                case 4:
-                {
-                    double price;
-                    cout << "Enter max price: ";
-                    cin >> price;
-                    Search::searchByPrice(company.getListings(), company.getListingCount(), price);
-                    break;
-                }
-                case 5:
-                {
-                    double mileage;
-                    cout << "Enter max mileage: ";
-                    cin >> mileage;
-                    Search::searchByMileage(company.getListings(), company.getListingCount(), mileage);
-                    break;
-                }
-                }
-                break;
-            }
-
-            case 2:
-            {
-                int listingID;
-                cout << "Enter Listing ID to favourite: ";
-                cin >> listingID;
-
-                Listing *found = company.findListing(listingID);
-                if (found && buyerObj.addtoFavs(*found))
-                    cout << "Added to favourites.\n";
-                else
-                    cout << "Failed to add.\n";
-                break;
-            }
-
-            case 3:
-            {
-                int receiverID;
-                string msg;
-                cout << "Enter Seller ID: ";
-                cin >> receiverID;
-                cout << "Enter Message: ";
-                cin.ignore();
-                getline(cin, msg);
-
-                if (company.sendMessage(u1.getUserID(), receiverID, msg))
-                    cout << "Message sent.\n";
-                else
-                    cout << "Message failed.\n";
-                break;
-            }
-
-            case 4:
-                cout << "You do not have permission to perform this action.\n";
-                break;
-            }
-        }
-        else if (role == "seller")
-        {
-            if (choice == 4)
-                cout << "You do not have permission to perform this action.\n";
-            else
-                cout << "Seller functionality can be expanded here.\n";
-        }
-        else if (role == "admin")
-        {
-            if (choice == 4)
-            {
-                int listingID;
-                cout << "Enter Listing ID to approve: ";
-                cin >> listingID;
-
-                Listing *found = company.findListing(listingID);
-                if (found)
-                {
-                    found->publish();
-                    cout << "Approved.\n";
-                }
-                else
-                    cout << "Listing not found.\n";
-            }
-            else
-            {
-                cout << "Admins only approve listings here.\n";
-            }
-        }
-        else
-        {
-            cout << "Invalid role.\n";
-        }
-
-    } while (choice != 5);
-
-    cout << "Exiting system.\n";
-
-    cout << "Total Users: " << User::getTotalUsers() << endl;
-    cout << "Total Listings: " << Listing::getTotalListings() << endl;
-    return 0;
-}*/
 
 /* //! COMPOSITION + ARRAY OF OBJECTS
 class Laptop
