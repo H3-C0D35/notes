@@ -5,12 +5,637 @@
 #include <cctype>
 using namespace std;
 
+/*//! CUSTOM EXCEPTIONS
+
+class MyException : public std::exception {
+    string message;
+public:
+    MyException(string msg) : message(msg) {}
+
+    const char* what() const noexcept override {
+        return message.c_str();
+    }
+};
+
+//*USAGE
+throw MyException("something went wrong");
+
+try { ... }
+catch (MyException& e) {
+    cout << e.what();
+}
+*/
+
+/* //!TEMPLATE
+ *templates are used as data types.
+ *SYNTAX --> template <typename T>
+ *now T can be used as a class, func or value data type.
+  T add(T a, T b){
+  return a+b; }
+  add<int>(5, 6); //* Specify the type of function like this --> func_name<dtype>(args);
+  add<double>(9.34+6.3);
+*but lets say you want different types for "T add(T a, T b)", then you declare different variables as one "T" is same across all the places its being used.
+*SYNTAX-->
+template<typename T>
+template<typename A>
+template<typename B>
+T add(A a, B b){};
+*then in main,
+T<void, int, int>(3, 2.4);
+*=======================================================================*
+
+*with classes:
+template <typename T>
+class Box {
+private:
+    T value;
+
+public:
+    Box(T val) : value(val) {}
+
+    T get() {
+        return value;
+    }
+
+    void set(T val) {
+        value = val;
+    }
+};
+
+Box<int> intBox(42); //*intBox and strBox are objects. syntax when a class has T members and funcs is --> classname<dtype> obj_name;
+Box<string> strBox("hello");
+
+intBox.get();   // returns int
+strBox.get();   // returns string
+
+*multiple parameters
+template <typename K, typename V>
+class Pair {
+public:
+    K key;
+    V value;
+
+    Pair(K k, V v) : key(k), value(v) {}
+};
+
+Pair<string, int> p("age", 25);
+
+? EXERCISE -- Making stack (push, pop, peep) using templates.
+template <typename T>
+class Stack
+{
+    T *arr;
+    int capacity;
+    int size;
+
+public:
+    Stack(int n) : capacity(n), size(0)
+    {
+        arr = new T[n];
+    }
+
+    ~Stack()
+    {
+        delete[] arr;
+    }
+
+    void push(T val)
+    {
+        if (size == capacity)
+        {
+            cout << "Stack is full.\n";
+        }
+        else
+        {
+            arr[size] = val;
+            size++;
+        }
+    }
+    bool isEmpty()
+    {
+        return size == 0;
+    }
+
+    T pop()
+    {
+        if (isEmpty())
+        {
+            throw runtime_error("NO ELEMENTS TO POP.\n");
+        }
+        else
+        {
+            size--;
+            return arr[size];
+        }
+    }
+    T peek()
+    {
+        if (isEmpty())
+        {
+            throw runtime_error("Stack is empty");
+        }
+        return arr[size - 1];
+    }
+};
+int main()
+{
+    Stack<int> obj(3);
+    obj.push(10);
+    obj.push(20);
+    obj.push(30);
+
+    cout << "PEEK: " << obj.peek() << endl;
+
+    cout << "POP: " << obj.pop() << endl;
+    cout << "PEEK: " << obj.peek() << endl;
+    cout << "POP: " << obj.pop() << endl;
+    cout << "POP: " << obj.pop() << endl;
+    try
+    {
+        obj.pop(); // stack empty — throws exception
+    }
+    catch (runtime_error &e)
+    {
+        cout << e.what() << "\n";
+    }
+}
+
+?EXERCISE - QUEUE that has Enqueue(push data), Dequeue(pull data from the front/staring element), Front(display front without removing it).
+template <typename T>
+class Queue
+{
+    T *arr;
+    int capacity;
+    int rear;
+    int front;
+
+public:
+    Queue(int c) : capacity(c), rear(0), front(0)
+    {
+        arr = new T[c];
+    }
+    void enqueue(T value)
+    {
+        if (rear < capacity)
+        {
+            arr[rear] = value;
+            rear++;
+        }
+        else
+        {
+            cout << "QUEUE IS FULL\n";
+        }
+    }
+    bool isEmpty()
+    {
+        return front == rear;
+    }
+    T dequeue()
+    {
+        if (!isEmpty())
+            return arr[front++];
+
+        else
+            throw runtime_error("CANT DEQUEUE.\n");
+    }
+    T Front()
+    {
+
+        if (!isEmpty())
+            return arr[front];
+
+        else
+            throw runtime_error("NO FRONT TO DISPLAY.\n");
+    }
+};
+
+int main()
+{
+    Queue<int> obj(4);
+    obj.enqueue(10);
+    obj.enqueue(20);
+    obj.enqueue(30);
+    obj.enqueue(40);
+    obj.enqueue(50);
+    cout << "FRONT: " << obj.Front() << endl;
+    cout << "DEQUEUE: " << obj.dequeue() << endl;
+    cout << "FRONT: " << obj.Front() << endl;
+    cout << "DEQUEUE: " << obj.dequeue() << endl;
+    cout << "DEQUEUE: " << obj.dequeue() << endl;
+    cout << "DEQUEUE: " << obj.dequeue() << endl;
+
+    try
+    {
+        cout << "DEQUEUE: " << obj.dequeue() << endl;
+        cout << "FRONT: " << obj.Front() << endl;
+    }
+    catch (runtime_error &e)
+    {
+        cout << e.what() << endl;
+    }
+}
+
+
+?Create a template class SmartArray: Supports dynamic array storage, Overloads the operator[] to access elements, Throws a OutOfBoundsException if the index is invalid.
+?Sample Input/Output:
+??Array size: 5
+?Enter elements: 1 2 3 4 5
+?Accessing index 2: 3
+?Accessing index 5:
+?OutOfBoundsException caught: Invalid index access attempted!
+?template <typename T>
+//*template<class T>    <-- either is correct
+class SmartArray
+{
+    T *arr;
+    int capacity;
+    int size;
+
+public:
+    SmartArray(int c) : capacity(c), size(0)
+    {
+        arr = new T[c];
+    }
+    ~SmartArray()
+    {
+        delete[] arr;
+    }
+    void Input()
+    {
+        for (int i = 0; i < capacity; i++)
+        {
+            cout << "Enter the elements" << i + 1 << ": ";
+            cin >> arr[size];
+            size++;
+        }
+    }
+    T &operator[](int idx) //*this is operator overloading. in main when you write objname[index], it will call this func. recap of operator overloading syntax--> dtype& operator symbol(args);
+    {
+        if (idx < 0 || idx >= size)
+            throw runtime_error("Invalid index access attempted!");
+        return arr[idx];
+    }
+};
+int main()
+{
+    cout << "Enter capacity of the array: ";
+    int n;
+    cin >> n;
+    SmartArray<int> obj(n);
+    obj.Input();
+    cout << "ACCESSING OBJ: " << obj[5] << endl;
+}
+*=====================================================================================
+*TEMPLATES WITH INHERITANCE:
+*CASE 1 -- Template base, normal derived
+template <typename T>
+class Base {
+public:
+T basevalue;
+Base(T v) : basevalue(v) {}
+void show() { cout << basevalue << "\n"; }
+};
+
+class Derived : public Base<int> {  //*T fixed to int. Can be fixed to any dtype.
+int derivevalue
+public:
+Derived(int bv, int dv) : Base<int>(bv), derivevalue(dv) {}
+};
+?EXAMPLE: Template base class — Container<T> -stores a single item of type T, has getItem(), setItem().
+?         Normal derived class — NamedContainer -inherits Container<string>, adds a string attribute: label, has describe() that prints label + item
+template <typename T>
+class Container
+{
+T item;
+
+public:
+Container() {}
+Container(T i) : item(i) {}
+T getItem()
+{
+    return item;
+}
+void setitem(T it)
+{
+    item = it;
+}
+};
+class NamedContainer : public Container<string>
+{
+string label;
+
+public:
+NamedContainer(string l) : label(l) {}
+void describe()
+{
+    cout << "Label: " << label << " | Item: " << getItem() << endl;
+}
+};
+int main()
+{
+NamedContainer o("Y");
+o.setitem("X");
+o.describe();
+}
+
+*CASE 2 -- Template base, Template derived
+template <typename T>
+class Base {
+public:
+T value;
+Base(T v) : value(v) {}
+};
+
+template <typename T>
+class Derived : public Base<T> {  //* T passed through
+public:
+Derived(T v) : Base<T>(v) {}
+void show() { cout << this->value << "\n"; } //* "this" is important here otherwise it wont show anything on the output screen.
+};
+
+Derived<int> d(42);
+Derived<string> d2("hello");
+
+?EXAMPLE - Template base class — Animal<T> - has a T attribute called `sound`, speak() that prints sound
+?          Template derived class — Dog<T> - inherits Animal<T> - adds a method fetch() that prints "Fetching!"
+template <typename T>
+class Animal
+{
+protected:
+T sound;
+
+public:
+Animal(T s) : sound(s) {}
+void speak()
+{
+    cout << "Animal goes " << sound << endl;
+}
+};
+
+template <typename T>
+class Dog : public Animal<T>
+{
+public:
+Dog(T s) : Animal<T>(s) {}
+void speak()
+{
+    cout << "Dog goes " << this->sound << endl; //* prints woof
+}
+
+void fetch()
+{
+    cout << "Fetching!" << endl;
+}
+};
+int main()
+{
+Animal<string> a("generic");
+Dog<string> d("woof");
+a.speak();
+d.speak();
+d.fetch();
+}
+
+*CASE 3 - Normal base, template derived
+class Base {
+public:
+    void identify() { cout << "I am base\n"; }
+};
+
+template <typename T>
+class Derived : public Base {
+public:
+    T data;
+    Derived(T d) : data(d) {}
+};
+
+*=========================================================
+*GENERIC AND SPECIALIZED TEMPLATE CLASSES
+*
+?EXERCISE
+class Base
+{
+public:
+    virtual void showDetails() = 0;
+    virtual void drive() = 0;
+};
+template <typename T>
+class Vehicle : public Base
+{
+    string name;
+    int vehicleID;
+    T fuelCapacity;
+    string category;
+
+public:
+    Vehicle() : name(""), vehicleID(0), fuelCapacity(), category("") {}
+    Vehicle(string n, int v, T f, string c) : name(n), vehicleID(v), fuelCapacity(f), category(c) {}
+    void showDetails() override
+    {
+        cout << "Name: " << name << endl
+             << "Vehicle ID: " << vehicleID << endl
+             << "Fuel Capacity: " << fuelCapacity << endl
+             << "Category: " << category << endl;
+    }
+
+    void drive() override
+    {
+        if (category == "Car")
+            cout << "Car is cruising on the road...\n";
+        else if (category == "Truck")
+            cout << "Truck is transporting goods...\n";
+        else if (category == "Electric Scooter")
+            cout << "Electric scooter is gliding silently...\n";
+    }
+};
+template <>
+class Vehicle<string> : public Base
+{
+    string name;
+    int vehicleID;
+    string fuelCapacity; // "Solar", "Hybrid", "BioFuel"
+    string category;
+
+public:
+    Vehicle(string n, int v, string f, string c) : name(n), vehicleID(v), fuelCapacity(f), category(c) {}
+    void showDetails() override
+    {
+        cout << "Name: " << name << endl
+             << "Vehicle ID: " << vehicleID << endl
+             << "Fuel Capacity: " << fuelCapacity << endl
+             << "Category: " << category << endl;
+    }
+    void drive()
+    {
+        if (fuelCapacity == "Solar")
+            cout << "Operating in solar-charging mode.\n";
+        else if (fuelCapacity == "Hybrid")
+            cout << "Switching between electric and combustion modes.\n ";
+        else if (fuelCapacity == "BioFuel")
+            cout << "Running on clean biofuel mode.\n";
+    }
+};
+int main()
+{
+    Vehicle<int> car("Vehicle 1", 101, 45, "Car");
+    car.drive();
+    car.showDetails();
+    cout << endl;
+    Vehicle<double> truck("Vehicle 2", 102, 47.9, "Truck");
+    truck.drive();
+    truck.showDetails();
+    cout << endl;
+    Vehicle<float> scooter("Vehicle 3", 103, 23.68, "Electric Scooter");
+    scooter.drive();
+    scooter.showDetails();
+    cout << endl;
+    Vehicle<string> solar("Vehicle 4", 104, "Solar", "Car");
+    solar.drive();
+    solar.showDetails();
+    cout << endl;
+    Vehicle<string> hybrid("Vehicle 4", 104, "Hybrid", "Car");
+    hybrid.drive();
+    hybrid.showDetails();
+    cout << endl;
+}
+
+?SIMILAR EXERCISE + inheritance, array of pointers
+//*This class is the parent class which has pure virtual functions and its two child classes (Appliance<T> and Appliance<string>) inherit them functions from it.
+//*This way we can store the children under the same pointer type.
+class ApplianceBase
+{
+public:
+    virtual void operate() = 0;
+    virtual void showDetails() = 0;
+};
+
+template <typename T>
+class Appliance : public ApplianceBase
+{
+protected:
+    string name;
+    int modelNumber;
+    T powerRating;
+
+public:
+    Appliance() : name(""), modelNumber(0), powerRating() {}
+    Appliance(string n, int mN, T pR) : name(n), modelNumber(mN), powerRating(pR) {}
+    void showDetails() override
+    {
+        cout << "Name: " << name << endl
+             << "Model Number: " << modelNumber << endl
+             << "Power Rating: " << powerRating << endl;
+    }
+};
+
+template <>
+class Appliance<string> : public ApplianceBase
+{
+protected:
+    string name;
+    int modelNumber;
+    string category; // inputs:"Solar-Powered", "Low-Energy", or "Hybrid".
+
+public:
+    Appliance() : name(""), modelNumber(0), category("") {}
+    Appliance(string n, int mN, string category) : name(n), modelNumber(mN), category(category) {}
+    void showDetails()
+    {
+        cout << "Name: " << name << endl
+             << "Model Number: " << modelNumber << endl
+             << "Category: " << category << endl;
+    }
+    void operate()
+    {
+        if (category == "Solar-Powered")
+            cout << "Operating in Solar Power mode.\n";
+        else if (category == "Low-Energy")
+            cout << "Operating in Low Energy mode.\n";
+        else
+            cout << "Operating in hybrid mode.\n";
+    }
+};
+
+template <typename T>
+class WashingMachine : public Appliance<T>
+{
+public:
+    WashingMachine() {}
+    WashingMachine(string n, int mN, T powerRating) : Appliance<T>(n, mN, powerRating) {} //*dont forget the <T> with Appliance
+    void operate() override
+    {
+        cout << "Washing clothes..." << endl;
+    }
+
+    void washMode()
+    {
+        cout << "Washing cycle started\n";
+    }
+};
+template <typename T>
+class AirCondition : public Appliance<T>
+{
+public:
+    AirCondition() {}
+    AirCondition(string n, int mN, T powerRating) : Appliance<T>(n, mN, powerRating) {}
+
+    void operate() override
+    {
+        cout << "Cooling the room..." << endl;
+    }
+    void coolMode()
+    {
+        cout << "Cooling mode activated\n";
+    }
+};
+template <typename T>
+class SmartLight : public Appliance<T>
+{
+public:
+    SmartLight() {}
+    SmartLight(string n, int mN, T powerRating) : Appliance<T>(n, mN, powerRating) {}
+
+    void operate() override
+    {
+        cout << "Adjusting room lighting..." << endl;
+    }
+    void dimMode()
+    {
+        cout << "Brightness adjusted.\n";
+    }
+};
+int main()
+{
+    ApplianceBase *baseptr[6]; //*Array of base pointers
+    baseptr[0] = new WashingMachine<int>("Washing Machine", 1, 220);
+    baseptr[1] = new AirCondition<double>("Air Condition", 2, 230.8);
+    baseptr[2] = new SmartLight<float>("Smart Light", 3, 110.67);
+    baseptr[3] = new Appliance<string>("Eco Unit 1", 4, "Solar-Powered");
+    baseptr[4] = new Appliance<string>("Eco Unit 2", 5, "Low-Energy");
+    baseptr[5] = new Appliance<string>("Eco Unit 3", 6, "Hybrid");
+
+    for (int i = 0; i < 6; i++)
+    {
+        baseptr[i]->operate();
+        baseptr[i]->showDetails();
+        cout << endl;
+    }
+
+    for (int i = 0; i < 6; i++)
+    {
+        delete baseptr[i];
+    }
+}
+
+*/
+
 /* //! FILING
 *ifstream   → file to program     (reading)
 *ofstream   → program to file     (writing)
 *fstream    → both directions
+*for filing, include the library.
 
-*for filing, include the library. Syntax for creating and editing a file is -->
+*Syntax for creating and editing a file is -->
 ofstream name("filename.txt");
 name << "content";
 *OR
@@ -126,7 +751,7 @@ int main()
 cerr << "error opening file.\n";
 
 *-------------------------------------------
-//*If doing in classes, have to make constructors, destructors and so forth but in main,
+//*If we want to display using classes, have to make constructors, destructors and so forth but in main,
 int main()
 {
     string line;
@@ -134,6 +759,7 @@ int main()
     //* line by line
     while (getline(file, line))
     {
+    use cout<< to print
     }
 
     //* word by word
@@ -154,7 +780,7 @@ public:
     FileReader(const string &name)
     {
         file.open(name);
-        if (!file.is_open())
+        if (!file.open())
         {
             cout << "unable to open file.\n";
             exit(1);
@@ -183,10 +809,14 @@ int main()
     f.display();
 }
 *---------------------------------------------
-* ofstream.write((char *)&variable, sizeof(variable));
-* ifstream.read((char *)&variable, sizeof(variable));
+*for binary files, cast your variable into char, and mention its size.
+* ofstream.write((char *)&variable, sizeof(variable)); (writing into it)
+* ifstream.read((char *)&variable, sizeof(variable)); (reading from it)
 * in order to read or write raw binary data,
-explain this code
+
+
+
+
 class Student
 {
 public:
@@ -280,15 +910,14 @@ infile.read((char*)&s, sizeof(Student));
 int main()
 {
     ifstream file("file.txt");
-    int n;
-    file.seekg(0, ios::end);
-    int size = file.tellg();
+    file.seekg(0, ios::end); //* move the pointer to the end.
+    int size = file.tellg(); //* and calculate file size using tellg
 
-    file.seekg(size / 2, ios::beg);
+    file.seekg(size / 2, ios::beg); //*move halfway from beg
     string line;
     cout << "LINES: \n";
     int count = 0;
-    while (getline(file, line) && count < 10)
+    while (getline(file, line) && count < 10) //*using counter to print 10 lines only.
     {
         cout << line << endl;
         count++;
@@ -311,28 +940,71 @@ int main()
     file.read(buffer, 9);
     cout.write(buffer, 9);      //* cout<<buffer; but this will stop at \0. but the one i wrote will print exactly 9 bytes.
 }
+*-----------------------------------------------------
+*to find the something in the file(line, word, number):
 
-?Alice090
+*NUMBER
+int main()
+{
+    fstream file("a1.txt");
+    file.seekg(0, ios::beg);
+    int target; //*target = [number]
+    string line;
+    streampos pos;
+    while (pos = file.tellg(), getline(file, line))
+    {
+        if (line == to_string(target))
+        {
+            file.seekp(pos);
+            cout << "number to overwrite.\n";
+            break;
+        }
+    }
+}
+*tho its better to use the number as a string and then find it using the word finding method below. just convert the number to string
+*WORD
+ while (pos = file.tellg(), getline(file, line))
+    {
+        if (line.find(target) != string::npos) //*becomes line.find(to_string(target)) in the case of number
+        {
+            file.seekp(pos + (streampos) line.find(target) );
+            cout << "[word to overwrite.]";
+            break;
+        }
+    }
+
+*LINE
+ while (pos = file.tellg(), getline(file, line))
+    {
+        if (line == target)
+        {
+            file.seekp(pos);
+            cout << "line to overwrite.\n";
+            break;
+        }
+    }
+*if anything lags just use clear() after if
+?Alice075
 ?Bobby099
 ?Carol100
 ?EXERCISE --- edit 075 to 090
 int main()
 {
-    fstream file("file.txt");
-    file.seekp(14, ios::beg);
-    string str = "099";
-    file.write(str.c_str(), str.length()); //*.write() takes in const char* therefore c_str() is used to conver str to char. we can also directy write "099", 3. .length is used in case we dont know the length otherwise just write the length.
-    file.seekg(0, ios::beg);               //*after editing, move to the beginning of the file to print the whole thing
+    fstream file("a1.txt");
+    file.seekg(0, ios::beg); //*move the pointer to start;
+    string num = "075";
     string line;
-    while (getline(file, line)) //*if the file contents are written with \n, use getline. otherwise use buffer
+    streampos pos;
+    while (pos = file.tellg(), getline(file, line))
     {
-        cout << line << endl;
+        if (line.find(num) != string::npos)
+        {
+            file.seekp(pos + (streampos)line.find(num));
+            file << "095";
+            break;
+        }
     }
-    //* char buffer[25] = {0}; //* 8*3 + \0 = 25
-    //* file.read(buffer, 24);
-    //* cout.write(buffer, 24);
 }
-
 *---------------------------------------------
 ?EXERCISE --- the quick brown fox jumps over teh lazy dog
 ? change teh to the.
@@ -345,7 +1017,7 @@ int main()
     while (file >> h)
     {
         if (h == "teh")
-            pos = file.tellg() - (streampos)h.length();
+            pos = file.tellg() - (streampos)h.length(); //*tellg moves us after the word and minus length moves us befores it.
     }
     string p = "the";
     *After while loop finishes reading, the stream is in EOF state. When a stream hits EOF, it sets a fail flag — and any operations after that, including seekp and write, silently do nothing.
@@ -372,7 +1044,7 @@ int main()
     {
         cout << line << endl;
     }
-
+}
 ? EXERCISE--- change 30 to 99
 int main()
 {
@@ -400,70 +1072,221 @@ int main()
         cout << line << endl;
     }
 }
-    */
-/*A backup program needs to monitor file size after every log entry.
-Requirements:
-• Accept log messages from the user.
-• Append each to backup_log.txt.
-• After every write, display the current file size using tellp().
-Expected Behaviour:
-User sees how much the file grows with each entry.
+
+?EXERCISE
+?1. EnrollmentRecord Class
+?Design a class EnrollmentRecord with the following:
+?Data Members:  enrollmentID (int)  studentName (string)  courseName (string)  courseFee (double)
+?Requirements:  A parameterized constructor that initializes all fields  A member function showDetails() to display the enrollment record
+
+?2. Input Validation & Exception Handling
+?Use built-in C++ exceptions (std::invalid_argument, etc.) to ensure data validity. Validation Rules:  Throw an exception if: o studentName is empty o courseFee < 0 o courseName is NOT one of the allowed options:  "Programming"  "DataScience"  "CyberSecurity" Requirements:  Use try–catch blocks while taking user input  If invalid input is entered, show the error and allow user to re-enter the record until valid
+
+?3. File Handling
+?Create a class EnrollmentFileManager that includes:
+?Functions:  writeEnrollments() o Writes all enrollment records to a file enrollments.txt o Must throw an exception if the file fails to open  readEnrollments() o Reads back stored records using getline() o Displays each record cleanly
+
+?4. Main Function
+?Requirements:  Ask user for n enrollment entries  Validate each entry using exception handling  Store all records in the file  Display saved records Read back and print all records from the file
+
+#include <iostream>
+#include <cctype>
+#include <fstream>
+
+using namespace std;
+class EnrollmentRecord
+{
+
+public:
+    int enrollmentID;
+    string studentName;
+    string courseName;
+    double courseFee;
+
+    EnrollmentRecord() : enrollmentID(0), studentName(""), courseName(""), courseFee(0.0) {}
+    EnrollmentRecord(int id, string studentname, string coursename, double coursefee) : enrollmentID(id), studentName(studentname), courseName(coursename), courseFee(coursefee) {}
+
+    void showDetails()
+    {
+        cout << "Enrollment ID: " << enrollmentID << endl
+             << "Student Name: " << studentName << endl
+             << "Course Name: " << courseName << endl
+             << "Course Fee: " << courseFee << endl;
+    }
+};
+class EnrollmentManager
+{
+    fstream file;
+    string name;
+
+public:
+    EnrollmentManager(string n) : name(n)
+    {
+        file.open(name, ios::out | ios::in | ios::trunc); //*have to write the type of stuff that would be done to the file i.e. reading writing and so on
+        if (!file)
+            throw runtime_error("Error!");
+    }
+    ~EnrollmentManager()
+    {
+        if (file.is_open())
+        {
+            file.close();
+            cout << "File closed.\n";
+        }
+    }
+
+    void writeEnrollments(EnrollmentRecord &Er)
+    {
+        if (!file.is_open())
+            throw runtime_error("Could not open file");
+        //*to write in a txt file, do "file<<" , but if its a binary file, do "file.write()"
+        file << "Enrollment ID: " << Er.enrollmentID << endl
+             << "Student Name: " << Er.studentName << endl
+             << "Course Name: " << Er.courseName << endl
+             << "Course Fee: " << Er.courseFee << endl;
+    }
+
+    void readEnrollments()
+    {
+        file.seekg(0, ios::beg); //*moving the pointer at the start for printing.
+        string line;
+        cout << "\n--- Records from file ---\n";
+        while (getline(file, line))
+        {
+            cout << line << endl;
+        }
+    }
+};
+int main()
+{
+    int n;
+    cout << "How many enrollment entries?: ";
+    cin >> n;
+    EnrollmentRecord *record = new EnrollmentRecord[n];
+    EnrollmentManager e1("enrollment.txt");
+
+    for (int i = 0; i < n; i++)
+    {
+
+        int enrollmentID;
+        string studentName;
+        string courseName;
+        double courseFee;
+
+        cout << "- - -ENTRY " << i + 1 << "- - -\n";
+        cout << "Enter enrollment ID: ";
+        cin >> enrollmentID;
+        do
+        {
+            cout << "Enter Student Name: ";
+            cin.ignore();
+            getline(cin, studentName);
+            try
+            {
+                if (studentName.empty())
+                    throw invalid_argument("Name cannot be empty!");
+            }
+            catch (invalid_argument &e)
+            {
+                cout << e.what() << "\n";
+                studentName = ""; // ensure loop continues
+            }
+        } while (studentName.empty());
+
+        do
+        {
+            cout << "Enter Course Name(Programming, DataScience, CyberSecurity): ";
+            cin >> courseName;
+            try
+            {
+                if (courseName != "Programming" && courseName != "DataScience" && courseName != "CyberSecurity")
+                    throw invalid_argument("Course not available. Choose from the given options");
+            }
+            catch (invalid_argument &f)
+            {
+                cout << f.what() << endl;
+            }
+        } while (courseName != "Programming" && courseName != "DataScience" && courseName != "CyberSecurity");
+
+        do
+        {
+
+            cout << "Enter Course Fee: ";
+            cin >> courseFee;
+            try
+            {
+                if (courseFee < 0)
+                    throw invalid_argument("Invalid");
+            }
+            catch (invalid_argument &g)
+            {
+                cout << g.what() << endl;
+            }
+        } while (courseFee < 0);
+
+todo ::IMPORTANT THING TO NOTE
+        record[i] = EnrollmentRecord(enrollmentID, studentName, courseName, courseFee);
+        e1.writeEnrollments(record[i]);
+    }
+
+    e1.readEnrollments();
+
+    delete[] record;
+}
+
+?A backup program needs to monitor file size after every log entry.
+?Requirements:
+?• Accept log messages from the user. | Append each to backup_log.txt.
+?• After every write, display the current file size using tellp().
+?Expected Behaviour: User sees how much the file grows with each entry.
 
 int main()
 {
-    fstream file("file.txt", ios::app);
+    fstream file("a1.txt", ios::app);
     string message;
-    int choice;
+    cin.ignore();
     do
     {
-        cout << "Enter a message: ";
         getline(cin, message);
         file << message << endl;
         streampos pos = file.tellp();
-        cout << pos << endl;
-        cout << "Do you wannt to add more?(1 = yes, 0 = no): ";
-        cin >> choice;
-        cin.ignore();
-    } while (choice == 1);
+        cout << "Size: " << pos << endl;
+    } while (message != "exit");
 }
 
-
+?EXERCISE - Count line,word, char, punct mark, digit
 int main()
 {
-    fstream file("file.txt");
     string line;
     string word;
-    char c;
-    int linecount = 0;
+    char ch;
+    int linecount = 0, wordcount = 0, chcount = 0, markcount = 0, numcount = 0;
+    fstream file("a1.txt");
     while (getline(file, line))
-    {
         linecount++;
-    }
+
     file.clear();
     file.seekg(0, ios::beg);
-    int wordcount = 0;
+
     while (file >> word)
-    {
         wordcount++;
-    }
+
     file.clear();
     file.seekg(0, ios::beg);
-    int charcount = 0;
-    while (file.get(c))
+
+    while (file.get(ch))
     {
-        charcount++;
-    }
-    file.clear();
-    file.seekg(0, ios::beg);
-    int markcount = 0;
-    while (file.get(c))
-    {
-        if (ispunct(c))
+        if (isalpha(ch))
+            chcount++;
+        else if (isdigit(ch))
+            numcount++;
+        else if (!ispunct(ch))
             markcount++;
     }
     file.clear();
     file.seekg(0, ios::beg);
-    cout << "Line count: " << linecount << "\nWord Count: " << wordcount << "\nChar Count: " << charcount << "\nMark Count: " << markcount << endl;
+
+    cout << "Line count = " << linecount << endl << "Word Count = " << wordcount << endl << "Character count = " << chcount << endl << "Mark count = " << markcount << endl << "Number count = " << numcount << endl;
 }
 
 A file debugger tool lets users jump around a file and inspect contents.
@@ -495,6 +1318,23 @@ int main()
     file.read(buffer, 100);
     cout << buffer;
 }
+*OR
+int main()
+{
+    fstream file("a1.txt");
+    int byteoff;
+    cout << "Enter byte offset: ";
+    cin >> byteoff;
+    file.seekg((streampos)byteoff, ios::beg);
+    int count = 0;
+    char ch;
+    while (file.get(ch) && count < 100)
+    {
+        cout << ch;
+        count++;
+    }
+}
+
 
 class Student
 {
@@ -505,7 +1345,6 @@ public:
 
     void fileInput()
     {
-        int another;
         fstream file("file.txt", ios::app);
         cout << "Enter roll number: ";
         cin >> roll;
@@ -531,12 +1370,13 @@ public:
 };
 int main()
 {
-    // fstream file("file.txt", ios::trunc | ios::in | ios::out);
+    //* fstream file("file.txt", ios::trunc | ios::in | ios::out);
     Student student;
     student.fileInput();
     student.display();
 }
 
+?EXERCISE - writing the quote into the file and making one of its word allcaps and printing it.
 int main()
 {
     string quote = "In the middle of difficulty, lies opportunity. ~Albert Einstien";
@@ -565,6 +1405,61 @@ int main()
     file.clear();
     file.seekg(0, ios::beg);
 }
+
+*OR
+
+
+int main()
+{
+    string quote = "In the middle of difficulty, lies opportunity. ~Albert Einstien";
+    fstream file("a1.txt");
+    file << quote << endl;
+    file.seekg(0, ios::beg);
+    string target = "middle";
+    string line;
+    streampos pos;
+    while (pos = file.tellg(), getline(file, line))
+    {
+        if (line.find(target) != string::npos)
+        {
+            file.seekp(pos + (streampos)line.find(target));
+            file << "MIDDLE";
+        }
+    }
+    file.clear();
+    file.seekg(0, ios::beg);
+    while (getline(file, quote))
+    {
+        cout << quote << endl;
+    }
+}
+*-------------------------------------------
+*to change something that appears multiple times at once,
+
+?EXERCISE - replace a with #
+file.seekg(0, ios::beg);
+streampos pos;
+char ch;
+while (pos = file.tellg(), file.get(ch))
+{
+    if (ch == 'a')
+    {
+        file.seekp(pos);
+        file << '#';
+    }
+}
+
+?Replace a word/number
+file.seekg(0, ios::beg);
+streampos pos;
+string line;
+string target;
+while(pos = file.tellg(), getline(file, line)){
+size_t found = line.find(target);
+while(streampos found != string::npos){
+file<<"wordtoreplace";
+found = line.find(target, found+1) } }
+
 */
 
 /* //! OPERATOR OVERLOADING
@@ -846,24 +1741,6 @@ int main()
 
 */
 
-// 6. Hotel Room Reservation with Inheritance A seaside hotel has three types of rooms: StandardRoom, DeluxeRoom, and SuiteRoom.
-// Each room type has different pricing and amenities. The hotel wants a basic reservation
-// system that captures guest details, assigns rooms, and computes total charges.
-// However, internal pricing rules (like seasonal multipliers or discounts) must not be
-// directly modifiable from outside the room classes.
-// Requirements:
-// Create a base class Room with:
-// Room number, base price per night, and occupancy status.
-// A constructor that initializes the room number and base price.
-// Create derived classes:
-// Use constructors and destructors to:
-// Display messages when reservations are created and destroyed, simulating allocation and release of booking resources.
-// The system should allow a tester to:
-// Create rooms of various types.
-// Create reservations.
-// Attempt to book an already occupied room and see that it is prevented by internal
-// logic (not by manipulating fields directly).
-
 /* //!FRIEND CLASS
  *every friend class can access the members of the class they are declared in.
 class Engine; //*declaring here is important otherwise we wont be able to use it in class Car.
@@ -884,6 +1761,117 @@ public:
 
 /* //! FRIEND FUNCTION
  *declared inside class but defined outside as they dont belong to the class. The class decide whom the friends are and then shares its private / protected members with it. This prevents excess getters/setters.
+
+ ?EXERCISE -
+?Commission Rules: ~Emerging Artist: 8% of sale price + €300 | ~Renowned Artist: 4% of sale price + €300
+?Artwork Class
+?Data Members: title | artistName | yearCreated | basePrice | salePrice | artistCategory (e.g., "Emerging", "Renowned")
+?Tasks:  Create a parameterized constructor  Implement inputArtwork() to enter full artwork details including final sale price  Implement showArtwork() to display artwork information  The class must contain a CommissionEngine object (has-a relation)
+
+?CommissionEngine Class
+?Requirements:  Contains a friend function  double computeCommission(Artwork&)  This function must access Artwork’s private data and compute commission based on: o Artist category o Final sale price
+
+?Main Function
+?Tasks:  Create an Artwork object  Take sale price input from user  Call computeCommission()  Display artwork details + the computed commission amount
+
+class Artwork;
+class CommissionEngine
+{
+public:
+    friend double computeCommission(Artwork &a);
+};
+class Artwork
+{
+    string title;
+    string artistName;
+    int yearCreated;
+    double basePrice;
+    double salePrice;
+    string artistCategory; //(e.g., "Emerging", "Renowned")
+    CommissionEngine e;
+
+public:
+    Artwork() : title(""), artistName(""), yearCreated(0), basePrice(0.0), salePrice(0.0), artistCategory("") {}
+    Artwork(string title, string artistname, int year, double basep, double salep, string category) : title(title), artistName(artistname), yearCreated(year), basePrice(basep), salePrice(salep), artistCategory(category) {}
+
+    //*using get function to modify their values. for modification put &. otherwise this error appears: "expression must be a modifiable lvalue"
+    //*another thing to note is that the purpose of friend is to access private members but here only question requirement is fulfilled (by using getter/setter)
+    double &getsaleprice() { return salePrice; }
+    string &getartistcategory() { return artistCategory; }
+
+    void inputArtwork()
+    {
+        string title;
+        string artistName;
+        int yearCreated;
+        double basePrice;
+        double salePrice;
+        string artistCategory;
+        cout << "---INPUT ARTWORK INFO---\n";
+
+        cout << "Enter title: ";
+        getline(cin, title);
+
+        cout << "Enter artist name: ";
+        getline(cin, artistName);
+
+        cout << "Enter year created: ";
+        cin >> yearCreated;
+
+        cout << "Enter base price: ";
+        cin >> basePrice;
+
+        cout << "Enter sale price: ";
+        cin >> salePrice;
+
+        cin.ignore();
+
+        cout << "Enter artist category(e.g., Emerging, Renowned): ";
+        getline(cin, artistCategory);
+
+        //*When wanting the input logic to be inside the function of the same class, use this->. but if do in main use constructor.
+        this->title = title;
+        this->artistName = artistName;
+        this->yearCreated = yearCreated;
+        this->basePrice = basePrice;
+        this->salePrice = salePrice;
+        this->artistCategory = artistCategory;
+    }
+    void showArtwork()
+    {
+        cout << "\n---ARTWORK DETAILS---\n";
+        cout << "Title: " << title << endl;
+        cout << "Artist Name: " << artistName << endl;
+        cout << "Year Created: " << yearCreated << endl;
+        cout << "Base Price: $" << basePrice << endl;
+        cout << "Sale Price: $" << salePrice << endl;
+        cout << "Artist Category: " << artistCategory << endl;
+        cout << "Final Price: $" << basePrice - salePrice << endl;
+    }
+};
+
+double computeCommission(Artwork &a)
+{
+    double com = 0;
+    if (a.getartistcategory() == "Emerging")
+    {
+        com = a.getsaleprice() + 249.9;
+    }
+    else if (a.getartistcategory() == "Renowned")
+    {
+        com = a.getsaleprice() + 399.9;
+    }
+    return com;
+}
+
+int main()
+{
+    Artwork a;
+    a.inputArtwork();
+    double com = computeCommission(a);
+    a.showArtwork();
+    cout << "Commission: $" << com << endl;
+}
  */
 
 /*//! JIST OF INHERITANCE CONCEPTS + POLYMORPHISM
@@ -1047,9 +2035,7 @@ int main()
     return 0;
 }
     */
-//! ══════════════════════════════THEORY═════════════════════════════════
-
-/* //! LINE ____
+/* //! ══════════════════════════════THEORY═════════════════════════════════
 *Both Light and Camera inherit from Device. If Thermostat inherits from both, we get two copies of Device inside Thermostat — ambiguity on every function call.
 *The fix is virtual inheritance on both Light and Camera — which we already have. That tells the compiler: merge the two Device subobjects into one.
 *So the correct structure is:
