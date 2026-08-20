@@ -1,8 +1,315 @@
 
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <cstring>
 using namespace std;
+
+/* //! GET AND PUT FILING POINTERS + CUSTOM EXCEPTION HANDLING
+class PatientAppointment
+{
+
+public:
+    int appNo;
+    string patientName;
+    string diseaseType;
+    double doctorFee;
+
+    PatientAppointment() : appNo(0), patientName("Unknown"), diseaseType("Unknown"), doctorFee(0.0) {}
+    PatientAppointment(int n, string p, string d, double f) : appNo(n), patientName(p), diseaseType(d), doctorFee(f) {}
+    void showDetails()
+    {
+        cout << "Application No:" << appNo << endl
+             << "Patient name: " << patientName << endl
+             << "Disease type: " << diseaseType << endl
+             << "Doctor Fee: " << doctorFee << endl;
+    }
+};
+class InvalidAppointmentException : public exception
+{
+    string message;
+
+public:
+    InvalidAppointmentException(string m) : message(m) {}
+    const char *what() const noexcept override
+    {
+        return message.c_str();
+    }
+};
+
+class AppointmentFileManager
+{
+    fstream file;
+    string name;
+
+public:
+    AppointmentFileManager(string n) : name(n)
+    {
+        file.open(name, ios::out | ios::in | ios::trunc);
+        if (!file)
+            throw invalid_argument("Cannot open file.\n");
+    }
+    ~AppointmentFileManager()
+    {
+        if (file.is_open())
+            file.close();
+        cout << "File closed.\n";
+    }
+    void writeAppointments(PatientAppointment &p)
+    {
+        if (!file)
+            throw invalid_argument("Couldnt Open file.\n");
+        file << "Application No:" << p.appNo << endl
+             << "Patient name: " << p.patientName << endl
+             << "Disease type: " << p.diseaseType << endl
+             << "Doctor Fee: " << p.doctorFee << endl;
+    }
+    void readAppointments()
+    {
+        file.seekg(0, ios::beg);
+        string line;
+        while (getline(file, line))
+        {
+            cout << line << endl;
+        }
+    }
+
+    void updateRecord(int appNo)
+    {
+        file.seekg(0, ios::beg);
+        string line;
+        streampos pos;
+        while (pos = file.tellg(), getline(file, line))
+        {
+            if (line.find(to_string(appNo)) != string::npos )
+            {
+                file.seekp(pos + (streampos)line.find(to_string(appNo)) );
+                file << "999";
+                break;
+            }
+        }
+    }
+};
+
+int main()
+{
+    int n;
+    cout << "How many appointments: ";
+    cin >> n;
+    AppointmentFileManager file("appointment.txt");
+    PatientAppointment *p = new PatientAppointment[n];
+    for (int i = 0; i < n; i++)
+    {
+        int appNo;
+        string patientName;
+        string diseaseType;
+        double doctorFee;
+
+        cout << "Enter application number: ";
+        cin >> appNo;
+        do
+        {
+            cout << "Enter patient name: ";
+            cin.ignore();
+            getline(cin, patientName);
+            try
+            {
+                if (patientName.empty())
+                    throw InvalidAppointmentException("Patient name cannot be empty.");
+            }
+            catch (InvalidAppointmentException &e)
+            {
+                cout << e.what() << endl;
+            }
+        } while (patientName.empty());
+
+        cout << "Enter disease: ";
+        cin >> diseaseType;
+
+        do
+        {
+            cout << "Enter Doctor Fee: ";
+            cin >> doctorFee;
+            try
+            {
+                if (doctorFee < 0)
+                    throw InvalidAppointmentException("Fee cannot be less than 0.");
+            }
+            catch (InvalidAppointmentException &e)
+            {
+                cout << e.what() << endl;
+            }
+        } while (doctorFee < 0);
+
+        p[i] = PatientAppointment(appNo, patientName, diseaseType, doctorFee);
+        file.writeAppointments(p[i]);
+    }
+    file.updateRecord(101);
+    file.readAppointments();
+}
+    */
+
+/* //! FILING + EXCEPTION HANDLING
+?EXERCISE
+?1. EnrollmentRecord Class
+?Design a class EnrollmentRecord with the following:
+?Data Members:  enrollmentID (int)  studentName (string)  courseName (string)  courseFee (double)
+?Requirements:  A parameterized constructor that initializes all fields  A member function showDetails() to display the enrollment record
+
+?2. Input Validation & Exception Handling
+?Use built-in C++ exceptions (std::invalid_argument, etc.) to ensure data validity. Validation Rules:  Throw an exception if: o studentName is empty o courseFee < 0 o courseName is NOT one of the allowed options:  "Programming"  "DataScience"  "CyberSecurity" Requirements:  Use try–catch blocks while taking user input  If invalid input is entered, show the error and allow user to re-enter the record until valid
+
+?3. File Handling
+?Create a class EnrollmentFileManager that includes:
+?Functions:  writeEnrollments() o Writes all enrollment records to a file enrollments.txt o Must throw an exception if the file fails to open  readEnrollments() o Reads back stored records using getline() o Displays each record cleanly
+
+?4. Main Function
+?Requirements:  Ask user for n enrollment entries  Validate each entry using exception handling  Store all records in the file  Display saved records Read back and print all records from the file
+
+#include <iostream>
+#include <cctype>
+#include <fstream>
+
+using namespace std;
+class EnrollmentRecord
+{
+
+public:
+    int enrollmentID;
+    string studentName;
+    string courseName;
+    double courseFee;
+
+    EnrollmentRecord() : enrollmentID(0), studentName(""), courseName(""), courseFee(0.0) {}
+    EnrollmentRecord(int id, string studentname, string coursename, double coursefee) : enrollmentID(id), studentName(studentname), courseName(coursename), courseFee(coursefee) {}
+
+    void showDetails()
+    {
+        cout << "Enrollment ID: " << enrollmentID << endl
+             << "Student Name: " << studentName << endl
+             << "Course Name: " << courseName << endl
+             << "Course Fee: " << courseFee << endl;
+    }
+};
+class EnrollmentManager
+{
+    fstream file;
+    string name;
+
+public:
+    EnrollmentManager(string n) : name(n)
+    {
+        file.open(name, ios::out | ios::in | ios::trunc); //*have to write the type of stuff that would be done to the file i.e. reading writing and so on
+        if (!file)
+            throw runtime_error("Error!");
+    }
+    ~EnrollmentManager()
+    {
+        if (file.is_open())
+        {
+            file.close();
+            cout << "File closed.\n";
+        }
+    }
+
+    void writeEnrollments(EnrollmentRecord &Er)
+    {
+        if (!file.is_open())
+            throw runtime_error("Could not open file");
+        //*to write in a txt file, do "file<<" , but if its a binary file, do "file.write()"
+        file << "Enrollment ID: " << Er.enrollmentID << endl
+             << "Student Name: " << Er.studentName << endl
+             << "Course Name: " << Er.courseName << endl
+             << "Course Fee: " << Er.courseFee << endl;
+    }
+
+    void readEnrollments()
+    {
+        file.seekg(0, ios::beg); //*moving the pointer at the start for printing.
+        string line;
+        cout << "\n--- Records from file ---\n";
+        while (getline(file, line))
+        {
+            cout << line << endl;
+        }
+    }
+};
+int main()
+{
+    int n;
+    cout << "How many enrollment entries?: ";
+    cin >> n;
+    EnrollmentRecord *record = new EnrollmentRecord[n];
+    EnrollmentManager e1("enrollment.txt");
+
+    for (int i = 0; i < n; i++)
+    {
+
+        int enrollmentID;
+        string studentName;
+        string courseName;
+        double courseFee;
+
+        cout << "- - -ENTRY " << i + 1 << "- - -\n";
+        cout << "Enter enrollment ID: ";
+        cin >> enrollmentID;
+        do
+        {
+            cout << "Enter Student Name: ";
+            cin.ignore();
+            getline(cin, studentName);
+            try
+            {
+                if (studentName.empty())
+                    throw invalid_argument("Name cannot be empty!");
+            }
+            catch (invalid_argument &e)
+            {
+                cout << e.what() << "\n";
+                studentName = ""; // ensure loop continues
+            }
+        } while (studentName.empty());
+
+        do
+        {
+            cout << "Enter Course Name(Programming, DataScience, CyberSecurity): ";
+            cin >> courseName;
+            try
+            {
+                if (courseName != "Programming" && courseName != "DataScience" && courseName != "CyberSecurity")
+                    throw invalid_argument("Course not available. Choose from the given options");
+            }
+            catch (invalid_argument &f)
+            {
+                cout << f.what() << endl;
+            }
+        } while (courseName != "Programming" && courseName != "DataScience" && courseName != "CyberSecurity");
+
+        do
+        {
+
+            cout << "Enter Course Fee: ";
+            cin >> courseFee;
+            try
+            {
+                if (courseFee < 0)
+                    throw invalid_argument("Invalid");
+            }
+            catch (invalid_argument &g)
+            {
+                cout << g.what() << endl;
+            }
+        } while (courseFee < 0);
+
+todo ::IMPORTANT THING TO NOTE
+        record[i] = EnrollmentRecord(enrollmentID, studentName, courseName, courseFee);
+        e1.writeEnrollments(record[i]);
+    }
+
+    e1.readEnrollments();
+
+    delete[] record;
+}*/
 
 /* //! ENCAPSULATION + CONSTRUCTORS + STATIC + CONST + INLINE + HAS A + IS A + VIRTUAL + DIAMOND PROBLEM + FRIEND CLASS N FUNCTION + OPERATOR OVERLOADING + ARRAY OF OBJECTS
 ?Data members (private where applicable):  Person (private): string name; int age;

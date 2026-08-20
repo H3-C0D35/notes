@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+// TODO: fix this later
 
 //? Array of nested structures with pointers
 /*
