@@ -85,7 +85,7 @@ template<typename A>
 template<typename B>
 T add(A a, B b){};
 *then in main,
-T<void, int, int>(3, 2.4);
+T<void, int, double>(3, 2.4);
 *=======================================================================*
 
 *with classes:
@@ -2709,7 +2709,7 @@ p[1] = &t1;
     }
  */
 
-/* //! COMPOSITION AND AGGREGATION
+/* // ! COMPOSITION AND AGGREGATION
 *Objects can be created in classes using composition and aggregation.
 *Distinction between composition and aggregation is lifecycle of object.
 *COMPOSITION: If object of a class is dependent on another class, it has strong relationship with object
@@ -3093,6 +3093,230 @@ int main()
 }
 */
 
+/* //! DOUBLE POINTERS (MATRIX) ALLOCATION + USING RULE OF 3
+* ALLOCATION syntax -->
+    int** data;
+    data = new int*[rows]; //* say rows = 3, this will create space for 3 int pointers, not the rows themself. Each pointer must be made to point to a dynamically allocated row.
+    for (int i = 0; i < rows; i++) {
+            data[i] = new int[cols];
+
+            for (int j = 0; j < cols; j++){
+                data[i][j] = 0;     //*merely fills in zero at all positions.
+            } }
+*The row structure looks like:
+data
+ │
+ ├── data[0]  // int*
+ ├── data[1]  // int*
+ └── data[2]  // int*
+
+*after the first for loop, it looks like:   the statement inside the loop allocates int space for one row pointer.
+ data
+ │
+ ├──► data[0]: [ int ][ int ][ int ][ int ]
+ ├──► data[1]: [ int ][ int ][ int ][ int ]
+ └──► data[2]: [ int ][ int ][ int ][ int ]
+
+*DELETION:
+ ~Matrix()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            delete[] data[i];      //* first delete the ints inside each row,
+        }
+        delete[] data;      //*then delete the pointer holding these ints. Think of data like a cabinet and data[i] like drawers inside the cabinet. To delete the cabinet, you first delete the drawers(columns), and then delete the cabinet pointer as well.
+    }   //* Also since we're using two "new's", we have to delete two times.
+
+*DEEP COPY CONSTRUCTOR:
+Matrix(const Matrix& other): rows(other.rows), cols(other.cols){    //*allocation of sizes (usual stuff)
+//*allocating memory
+data = new int* [rows];
+for(int i = 0; i < rows; i++){
+data[i] = new int[cols];
+
+for(int j = 0; j < cols; j++){
+data[i][j] = other.data[i][j];    //*copying data. Similar to when we first allocated the parameterized constructor, just this time, we copy real values instead of putting in zeros
+} } }
+
+*COPY ASSIGNMENT OPERATOR
+Matrix &operator=(const Matrix &other){
+if(this != &other){     //*step 1: avoid self assignment
+  int** newData = new int* [other.rows];    //*step 2: allocate a new row-pointer array
+//* step 3: allocate and copy every row
+  for(int i = 0; i < other.rows; i++){
+    newData = new int[other.cols];
+
+  for(int j = 0; j < other.cols; j++){
+    newData[i][j] = other.data[i][j];
+  } }
+//* step 4: delete the old matrix
+  for(int i = 0; i < other.rows; i++)
+    delete[] data[i];
+
+  delete[] data;
+//* step 5: take ownership
+  rows = other.rows;
+  cols = other.cols;
+  data = newData;
+
+}
+  return *this;
+}
+
+*OPERATOR+
+*we can add matrix elements normally by using loops but we cant write something like Matrix C = A + B.
+Matrix& operator+(const Matrix& other){
+Matrix result(rows, cols);      //* create an object in which the sum(result) is stored
+
+for(int i = 0; i < rows; i++){
+    for(int j = 0; j < cols; j++){
+        result.data[i][j] = data[i][j] + other.data[i][j];
+} }
+return result;
+}
+
+?WHOLE PROGRAM
+class Matrix
+{
+    int rows;
+    int cols;
+    int **data;
+
+public:
+    Matrix(int r, int c) : rows(r), cols(c)
+    {
+        data = new int *[rows];
+        for (int i = 0; i < rows; i++)
+        {
+            data[i] = new int[cols];
+            for (int j = 0; j < cols; j++)
+            {
+                data[i][j] = 0;
+            }
+        }
+    }
+
+    //* functions for bounds checking, inputting values
+    bool validBounds(int r, int c)
+    {
+        if ((r < 0 && r >= rows) || (c < 0 && c >= cols))
+            return false;
+        else
+            return true;
+    }
+
+    void set(int r, int c, int value)
+    {
+        if (validBounds(r, c))
+            data[r][c] = value;
+        else
+            cout << "Invalid bounds.\n";
+    }
+
+    Matrix(const Matrix &other) : rows(other.rows), cols(other.cols)
+    {
+        data = new int *[other.rows];
+        for (int i = 0; i < other.rows; i++)
+        {
+            data[i] = new int[cols];
+            for (int j = 0; j < other.cols; j++)
+            {
+                data[i][j] = other.data[i][j];
+            }
+        }
+    }
+
+    ~Matrix()
+    {
+        for (int i = 0; i < rows; i++)
+            delete[] data[i];
+        delete[] data;
+    }
+    Matrix &operator=(const Matrix &other)
+    {
+        int **newData = new int *[other.rows];
+        for (int i = 0; i < other.rows; i++)
+        {
+            newData[i] = new int[cols];
+            for (int j = 0; j < other.cols; j++)
+            {
+                newData[i][j] = other.data[i][j];
+            }
+        }
+        for (int i = 0; i < rows; i++)
+            delete[] data[i];
+        delete[] data;
+
+        rows = other.rows;
+        cols = other.cols;
+        data = newData;
+    }
+    Matrix operator+(const Matrix &other)
+    {
+        Matrix result(rows, cols);
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                result.data[i][j] = data[i][j] + other.data[i][j];
+            }
+        }
+        return result;
+    }
+
+    void display()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                cout << data[i][j] << " ";
+            }
+            cout << endl;
+        }
+    }
+};
+int main()
+{
+    Matrix A(2, 2), B(2, 2);
+    A.set(0, 0, 3);
+    A.set(0, 1, 4);
+    A.set(1, 0, 5);
+    A.set(1, 1, 6);
+
+    B.set(0, 0, 7);
+    B.set(0, 1, 6);
+    B.set(1, 0, 5);
+    B.set(1, 1, 4);
+
+    cout << "A: " << endl;
+    A.display();
+    cout << endl
+         << "B: \n";
+    B.display();
+    cout << endl;
+
+    Matrix A1(A);
+    Matrix A2 = A;
+    A1.set(0, 0, 30);
+    A2.set(0, 0, 31);
+
+    Matrix C = A + B;
+    cout << "Sum C: \n";
+    C.display();
+    cout << endl;
+
+    cout << "A1: \n";
+    A1.display();
+    cout << endl;
+    A2.display();
+
+    B.set(-1, 5, 100);
+}
+
+
+*/
+
 /* //! COPY CONSTRUCTORS
 
 !         SHALLOW COPY vs DEEP COPY
@@ -3102,7 +3326,7 @@ Deep copy    — copies the data the pointer points to both objects have their O
 ! 1. SHALLOW COPY — what C++ does by default
 class Routine {
 public:
-    int    count;
+    int    count;   //The count var is not necessary here or in the Routine constructor. Program will work fine without it.
     int   *data;          // pointer to heap memory
 
     Routine(int n) {
@@ -3195,13 +3419,6 @@ Routine(const Routine &other)
      │ Who writes it    │ compiler (default)     │ you                      │
      └──────────────────┴────────────────────────┴──────────────────────────┘
 
-   ! THE ONE RULE
-     if your class has a RAW POINTER as a member
-     → always write deep copy constructor + destructor
-
-     if your class has NO pointers (just ints, strings, plain members)
-     → default shallow copy is fine, no shared memory to worry about
-
 *COPY CONSTRUCTOR IS CALLED WHEN object is initialized or copied, a value is passed to a function or a function returns some value.
 */
 /*//! SHALLOW COPY WIHTOUT USING ANY COPY CONSTRUCTOR
@@ -3236,6 +3453,7 @@ int main()
     b2.display();
 }
 */
+
 /* //! DEEP COPY EXAMPLE
 class Library {
 private:
@@ -3265,6 +3483,130 @@ public:
         for (int i = 0; i < size; ++i) {
             books[i] = otherbook.books[i];
         }
+    }
+};
+
+? dynamically allocate char, use rule of 3, in main: make an obj, copy it using constructor, then make third obj and copy it w/o initialization, change a value and print.
+class DynamicString
+{
+    char *data;
+
+public:
+    DynamicString()
+    {
+        data = new char[1];
+        data[0] = '\0'; //* idk the logic behind this so just remember it...
+    }
+
+    DynamicString(const char *text)
+    {
+        data = new char[strlen(text) + 1]; //* the +1 is for \0
+        strcpy(data, text);
+    }
+
+    DynamicString(const DynamicString &other)
+    {
+        data = new char[strlen(other.data) + 1];
+        //* either
+        strcpy(data, other.data); //* when dealing with chars, data can be copied easily using predefined funcs
+        //* or
+         for(int i = 0; i <= strlen(data); i++)
+            data[i] = other.data[i];
+    }
+
+    //* Copy assignment operator handles copying between two already created objects, i.e
+    //*  Routine A("Hello"); Routine B("World");
+     B = A;
+    //* This is different from initialization
+    Routine B = A;
+    //* Without a custom copy-assignment operator, C++ performs a memberwise shallow copy, in which both point to the same value: B.data = A.data;
+
+    DynamicString &operator=(const DynamicString &other)
+    {                       //* we couldve written DynamicString* other, but then we would have to pass B = &A.
+        if (this != &other) //* this = current object. The condition is used to assess self-match like if the user writes A = A.
+        {
+            char *newData = new char[strlen(other.data) + 1];
+            strcpy(newData, other.data); //* now newData and other.data point to different arrays containing the same text.
+            delete[] data;               //* delete the old data. If you deleted data first and then tried to copy into it, you would lose the original pointer and have nowhere safe to copy the new string. Allocating and copying first also helps prevent data loss if allocation fails.
+            data = newData;
+        }
+        return *this;
+    }
+
+    void print() const
+    {
+        cout << data << endl; //* loop also works but unnecessary
+    }
+
+    void setCharacter(int i, char c)
+    {
+        if (i >= 0 && i < strlen(data))
+        {
+            data[i] = c;
+        }
+        else
+            cout << "Index out of bounds!\n";
+    }
+
+    ~DynamicString()
+    {
+        delete[] data;
+    }
+};
+
+int main()
+{
+    DynamicString A("Hello");
+    DynamicString B(A);
+    DynamicString C;
+    C = A;
+
+    A.setCharacter(0, 'J');
+    A.print();
+    B.print();
+    C.print();
+}
+
+?same thing as above but for int
+class Numbers
+{
+public:
+    int *data;
+    int size;
+
+    Numbers(int n) : size(n)
+    {
+        data = new int[size];
+    }
+
+    Numbers(const Numbers &other) : size(other.size)
+    {
+        data = new int[size];
+
+        for (int i = 0; i < size; i++)
+            data[i] = other.data[i];
+    }
+
+    Numbers &operator=(const Numbers &other)
+    {
+        if (this != &other)
+        {
+            int *newData = new int[other.size];
+
+            for (int i = 0; i < other.size; i++)
+                newData[i] = other.data[i];
+
+            delete[] data;
+            data = newData;
+            size = other.size;
+        }
+
+        return *this;
+    }
+
+    ~Numbers()
+    {
+        delete[] data;
     }
 };
 */
