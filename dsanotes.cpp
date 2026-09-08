@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
-
-//! LINK LISTS
+/*//! LINK LISTS
+//! NOTE THAT WHEN TRYING TO RUN THE CODE, USE EITHER THE ORIGINAL OR THE IMPROVED VERSION OF THE FUNCTIONS AND NOT BOTH.
 //*a link list is a way to store data. A link list contains of nodes which hold data such as numbers, chars etc + the address of the next node.
 class sll //*single linked list
 {
@@ -182,6 +182,40 @@ public:
         }
     }
 
+    //*Improved deletebyValue
+    void deletebyValue(int value)
+    {
+        if (isEmpty())
+            throw underflow_error("Cannot delete from an empty list");
+
+        if (value == head->info)
+        {
+            deletefromHead();
+            return;
+        }
+
+        sll *before = head;
+        sll *temp = head->next;
+
+        while (temp != nullptr && temp->info != value)
+        {
+            before = temp;
+            temp = temp->next;
+        }
+
+        // Value was not found
+        if (temp == nullptr)
+            return;
+
+        before->next = temp->next;
+
+        // If the deleted node was the tail, update tail
+        if (temp == tail)
+            tail = before;
+
+        delete temp;
+    }
+
     int searchforValue(int val) //*dry run this you will understand
     {
 
@@ -189,6 +223,19 @@ public:
         for (temp = head; temp != 0 && temp->info != val; temp = temp->next)
             ;
         return temp->info;
+    }
+
+    //*Improved searchforValue
+    bool searchbyValue(int value)
+    {
+
+        for (sll *temp = head; temp != nullptr; temp = temp->next)
+        {
+            if (temp->info == value)
+                return true;
+        }
+
+        return false;
     }
 
     void printList() const
@@ -273,6 +320,7 @@ int main()
     // y.printList();
     //* y currently points to stack objects c, b, and a. Calling y's destructor would try to delete stack memory. Therefore, do not use this arrangement with a normal destructor. use functions (addtoHead(), deletefromHead()) instead.
 }
+*/
 
 /*  //! COMB SORT
 
