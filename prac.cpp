@@ -5,49 +5,96 @@
 #include <cctype>
 using namespace std;
 
-/* //! QUICK SORT
-#include <iostream>
-using namespace std;
-int partition(int arr[], int low, int high)
+void printArray(int arr[], int n, string msg)
 {
-    int i = low - 1;
-    int pivot = arr[high];
-
-    for (int j = low; j < high; j++)
-    {
-        if (arr[j] <= pivot)
-        {
-            i++;
-            swap(arr[i], arr[j]);
-        }
-    }
-    swap(arr[i + 1], arr[high]);
-    return i + 1;
+    cout << msg;
+    for (int i = 0; i < n; i++)
+        cout << arr[i] << " ";
+    cout << endl;
 }
 
-void quicksort(int arr[], int low, int high)
+void radixSort(int arr[], int n)
 {
-    if (low < high)
+    // 1. find max to know number of passes
+    int maxNo = arr[0];
+    for (int i = 1; i < n; i++)
+        if (arr[i] > maxNo)
+            maxNo = arr[i];
+
+    int output[8];
+
+    // 2. do counting sort for every digit place
+    for (int place = 1; maxNo / place > 0; place *= 10)
     {
-        int p = partition(arr, low, high);
-        quicksort(arr, low, p - 1);
-        quicksort(arr, p + 1, high);
+        cout << "\n================ PASS: place = " << place << " ================" << endl;
+
+        int count[10] = {0};
+
+        // count digits
+        for (int i = 0; i < n; i++)
+        {
+            int digit = (arr[i] / place) % 10;
+            count[digit]++;
+        }
+        cout << "Count after counting: ";
+        for (int i = 0; i < 10; i++)
+            cout << count[i] << " ";
+        cout << endl;
+
+        // prefix sum
+        for (int i = 1; i < 10; i++)
+        {
+            count[i] = count[i] + count[i - 1];
+        }
+        cout << "Count after prefix: ";
+        for (int i = 0; i < 10; i++)
+            cout << count[i] << " ";
+        cout << endl;
+
+        // build output array - RIGHT TO LEFT for stability
+        cout << "\nPlacing elements R->L:" << endl;
+        for (int i = n - 1; i >= 0; i--)
+        {
+            int digit = (arr[i] / place) % 10;
+            int pos = count[digit] - 1; // rightmost free spot
+
+            output[pos] = arr[i]; // place it
+            count[digit]--;       // move spot left
+
+            cout << " Take arr[" << i << "] = " << arr[i]
+                 << ", digit = " << digit
+                 << ", put at output[" << pos << "]"
+                 << ", count[" << digit << "] becomes " << count[digit] << endl;
+
+            cout << " output now: ";
+            for (int k = 0; k < n; k++)
+            {
+                if (k == pos)
+                    cout << "[" << output[k] << "] ";
+                else if (output[k] == 0 && k >= pos)
+                    cout << "[_] ";
+                else
+                    cout << output[k] << " ";
+            }
+            cout << endl;
+        }
+
+        // copy back
+        for (int i = 0; i < n; i++)
+            arr[i] = output[i];
+        printArray(arr, n, "Array after this pass: ");
     }
 }
 
 int main()
 {
-    int arr[] = {10, 22, 0, 2, 9, 4, 3, 9};
-    int n = 8;
-    quicksort(arr, 0, n - 1);
+    int arr[] = {500, 499, 38, 2, 770, 802};
+    int n = 6;
 
-    for (int i = 0; i < n; i++)
-    {
-        cout << arr[i] << " ";
-    }
+    printArray(arr, n, "Original array: ");
+    radixSort(arr, n);
+    printArray(arr, n, "\nFinal Sorted: ");
 }
-
-*/
 
 /*//! CUSTOM EXCEPTIONS
 
@@ -3314,6 +3361,114 @@ int main()
     B.set(-1, 5, 100);
 }
 
+?Similar program, just easier
+class DynamicArray
+{
+    int *arr;
+    int size;
+    int capacity;
+
+public:
+    DynamicArray() : size(0), capacity(2)
+    {
+        arr = new int[capacity];
+    }
+    DynamicArray(const DynamicArray &other) : size(other.size), capacity(other.capacity)
+    {
+        arr = new int[capacity];
+        for (int i = 0; i < size; i++)
+        {
+            arr[i] = other.arr[i];
+        }
+    }
+
+    DynamicArray &operator=(const DynamicArray &other)
+    {
+        if (this != &other)
+        {
+            int *newarr = new int[other.capacity];
+            for (int i = 0; i < other.size; i++)
+            {
+                newarr[i] = other.arr[i];
+            }
+            delete[] arr;
+            capacity = other.capacity;
+            size = other.size;
+            arr = newarr;
+        }
+        return *this;
+    }
+
+    ~DynamicArray()
+    {
+        delete[] arr;
+    }
+
+    void pushBack(int val)
+    {
+        if (size == capacity)
+        {
+            int newcap = capacity * 2;
+            int *newarr = new int[newcap];
+            for (int i = 0; i < size; i++)
+            {
+                newarr[i] = arr[i];
+            }
+            delete[] arr;
+            capacity = newcap;
+            arr = newarr;
+        }
+
+        arr[size] = val;
+        size++;
+    }
+
+    int &operator[](int index)
+    {
+        if (index < 0 || index >= size)
+            throw out_of_range("Index is out of range.\n");
+        return arr[index];
+    }
+
+    const int &operator[](int index) const
+    {
+        if (index < 0 || index >= size)
+            throw out_of_range("Index is out of range.\n");
+        return arr[index];
+    }
+
+    void print() const
+    {
+        for (int i = 0; i < size; i++)
+        {
+            cout << arr[i] << " ";
+        }
+    }
+};
+int main()
+{
+    DynamicArray obj;
+    obj.pushBack(10);
+    obj.pushBack(20);
+    obj.pushBack(30);
+    obj.pushBack(40);
+    obj.pushBack(50);
+    obj.pushBack(60);
+    cout << "OBJECT: ";
+    obj.print();
+    cout << endl;
+    DynamicArray obj2;
+    obj2 = obj;
+    cout << "COPY: ";
+    obj2.print();
+    cout << endl;
+    obj2[0] = 1000;
+    cout << "MODIFIED OBJ AND COPY: \n";
+    obj.print();
+    cout << endl;
+    obj2.print();
+    cout << endl;
+}
 
 */
 
