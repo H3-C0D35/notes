@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdexcept>
 using namespace std;
 /*  //! COMB SORT
 
@@ -672,5 +673,153 @@ int main()
     list.delbyValue(20);
     list.fwdprint();
     return 0;
+}
+*/
+
+/*//! STACK - array based implementation
+class Stack
+{
+public:
+    int capacity;
+    int top;
+    int *arr;
+
+    Stack(int c) : capacity(c)
+    {
+        arr = new int[capacity];
+        top = -1; // initially stack is empty
+    }
+
+    // check if it is empty and is full
+    bool isEmpty() { return top == -1; }
+    bool isFull() { return top == capacity - 1; }
+
+    // add
+    void push(int val)
+    {
+        if (isFull())
+            throw overflow_error("Stack overflow!");
+
+        top = top + 1;
+        arr[top] = val;
+    }
+
+    int pop()
+    {
+        if (isEmpty())
+            throw underflow_error("Stack Underflow!");
+
+        int poppedVal = arr[top]; // save val first in order to return it
+        top = top - 1;
+        return poppedVal;
+    }
+
+    // return the top item without removing it
+    int peek()
+    {
+        if (isEmpty())
+            throw underflow_error("Stack Underflow!");
+
+        return arr[top];
+    }
+
+    void printstack()
+    {
+        for (int i = 0; i <= top; i++)
+        {
+            cout << arr[i] << " | ";
+        }
+        cout << endl;
+    }
+};
+int main()
+{
+    Stack s(5);
+    s.push(10);
+    s.push(20);
+    s.push(30);
+    s.push(40);
+    s.push(50);
+    s.printstack();
+    cout << s.pop() << endl;
+    cout << s.peek() << endl;
+    s.printstack();
+}
+*/
+
+/*//! STACK - LL based implementation
+struct Node
+{
+    int info;
+    Node *next;
+    Node() : next(nullptr) {}
+    Node(int i, Node *n = 0) : info(i), next(n) {}
+};
+class StackLL
+{
+public:
+    Node *top;
+    StackLL() : top(nullptr) {}
+
+    bool isEmpty() { return top == 0; }
+
+    void push(int val)
+    {
+        Node *newNode = new Node(val);
+
+        if (top == nullptr)
+        {
+            top = newNode;
+        }
+        else
+        {
+            newNode->next = top;
+            top = newNode;
+        }
+    }
+
+    int pop()
+    {
+        if (isEmpty())
+            throw underflow_error("Stack underflow!");
+
+        int poppedval = top->info;
+        Node *temp = top;
+        top = top->next;
+        delete temp;
+        return poppedval;
+    }
+
+    int peek()
+    {
+        if (isEmpty())
+            throw underflow_error("Stack underflow!");
+
+        return top->info;
+    }
+
+    void printstack()
+    {
+        Node *temp = top;
+        while (temp != 0)
+        {
+            cout << "[" << temp->info << "]" << " | ";
+            temp = temp->next;
+        }
+        cout << endl;
+    }
+};
+int main()
+{
+    StackLL s;
+    s.push(10);
+    s.push(20);
+    s.push(30);
+    s.push(40);
+    s.push(50);
+    s.printstack();
+    cout << s.pop() << endl;
+    s.printstack();
+    cout << s.peek() << endl;
 }
 */
