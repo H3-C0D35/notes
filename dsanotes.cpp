@@ -1,71 +1,330 @@
 #include <iostream>
 #include <string>
-
 #include <stdexcept>
 using namespace std;
-/*  //! COMB SORT
 
+/* //! REVERSE A STRING RECURSIVELY
+void stringreverse(const char *str)
+{
+    if (*str == '\0')
+        return;
+
+    stringreverse(str + 1);
+
+    cout << *str;
+}
 int main()
 {
-    int arr[] = {5, 4, 3, 2, 1};
-    int n = 5;
-    int gap = n;
-    bool swapped = true;
+    stringreverse("hello");
+}
+*/
 
-    while (gap > 1 || swapped)
+/*//! STACK - array based implementation
+class Stack
+{
+public:
+    int capacity;
+    int top;
+    int *arr;
+
+    Stack(int c) : capacity(c)
     {
-        for (int i = 0; i < n; i++)
-        {
-            cout << arr[i] << " ";
-        }
+        arr = new int[capacity];
+        top = -1; // initially stack is empty
+    }
 
+    // check if it is empty and is full
+    bool isEmpty() { return top == -1; }
+    bool isFull() { return top == capacity - 1; }
+
+    // add
+    void push(int val)
+    {
+        if (isFull())
+            throw overflow_error("Stack overflow!");
+
+        top = top + 1;
+        arr[top] = val;
+    }
+
+    int pop()
+    {
+        if (isEmpty())
+            throw underflow_error("Stack Underflow!");
+
+        int poppedVal = arr[top]; // save val first in order to return it
+        top = top - 1;
+        return poppedVal;
+    }
+
+    // return the top item without removing it
+    int peek()
+    {
+        if (isEmpty())
+            throw underflow_error("Stack Underflow!");
+
+        return arr[top];
+    }
+
+    void printstack()
+    {
+        for (int i = 0; i <= top; i++)
+        {
+            cout << arr[i] << " | ";
+        }
         cout << endl;
-        gap = gap / 1.3;
-        if (gap < 1)
-            gap = 1;
-
-        //*start
-        swapped = false;
-        for (int i = 0; i + gap < n; i++)
-        {
-            if (arr[i] > arr[i + gap])
-            {
-                swap(arr[i], arr[i + gap]);
-                swapped = true;
-            }
-        }
     }
-    cout << endl;
-    for (int i = 0; i < n; i++)
-    {
-        cout << arr[i] << " ";
-    }
-}
-*/
-
-/* //! SELECTION SORT
+};
 int main()
 {
-    int arr[] = {5, 4, 3, 2, 1};
-    int n = sizeof(arr) / sizeof(arr[0]);
-
-    for (int i = 1; i < n; i++)
-    {
-        int key = arr[i];
-        int j = i - 1;
-        while (j >= 0 && arr[j] > key)
-        {
-            arr[j + 1] = arr[j];
-            j--;
-        }
-        arr[j + 1] = key;
-    }
-    for (int i = 0; i < n; i++)
-    {
-        cout << arr[i] << " ";
-    }
+    Stack s(5);
+    s.push(10);
+    s.push(20);
+    s.push(30);
+    s.push(40);
+    s.push(50);
+    s.printstack();
+    cout << s.pop() << endl;
+    cout << s.peek() << endl;
+    s.printstack();
 }
 */
+
+/*//! STACK - LL based implementation
+struct Node
+{
+    int info;
+    Node *next;
+    Node() : next(nullptr) {}
+    Node(int i, Node *n = 0) : info(i), next(n) {}
+};
+class StackLL
+{
+public:
+    Node *top;
+    StackLL() : top(nullptr) {}
+
+    bool isEmpty() { return top == 0; }
+
+    void push(int val)
+    {
+        Node *newNode = new Node(val);
+
+        if (top == nullptr)
+        {
+            top = newNode;
+        }
+        else
+        {
+            newNode->next = top;
+            top = newNode;
+        }
+    }
+
+    int pop()
+    {
+        if (isEmpty())
+            throw underflow_error("Stack underflow!");
+
+        int poppedval = top->info;
+        Node *temp = top;
+        top = top->next;
+        delete temp;
+        return poppedval;
+    }
+
+
+    int peek()
+    {
+        if (isEmpty())
+            throw underflow_error("Stack underflow!");
+
+        return top->info;
+    }
+
+    void printstack()
+    {
+        Node *temp = top;
+        while (temp != 0)
+        {
+            cout << "[" << temp->info << "]" << " | ";
+            temp = temp->next;
+        }
+        cout << endl;
+    }
+};
+int main()
+{
+    StackLL s;
+    s.push(10);
+    s.push(20);
+    s.push(30);
+    s.push(40);
+    s.push(50);
+    s.printstack();
+    cout << s.pop() << endl;
+    s.printstack();
+    cout << s.peek() << endl;
+}
+*/
+
+/*//! QUEUE - Array based imp
+class Queue
+{
+public:
+    int *arr;
+    int front, rear, capacity, size;
+    Queue(int cap) : capacity(cap)
+    {
+        arr = new int[capacity];
+        front = 0;
+        rear = -1;
+        size = 0;
+    }
+
+    void enqueue(int val)
+    {
+        if (size >= capacity)
+            throw overflow_error("Queue Overflow!");
+
+        rear = (rear + 1) % capacity;
+        arr[rear] = val;
+        size++;
+    }
+
+    bool isEmpty()
+    {
+        return size == 0;
+    }
+
+    int dequeue()
+    {
+        if (isEmpty())
+            throw underflow_error("Queue Underflow!");
+
+        int val = arr[front];
+        front = (front + 1) % capacity;
+        size--;
+        return val;
+    }
+
+    int peek()
+    {
+        if (isEmpty())
+            throw underflow_error("Queue Underflow!");
+
+        return arr[front];
+    }
+
+    void printqueue()
+    {
+        for (int i = 0; i < size; i++)
+        {
+            int j = (front + i) % capacity;
+            cout << arr[j] << " | ";
+        }
+        cout << endl;
+    }
+};
+int main()
+{
+    Queue q(5);
+    q.enqueue(10);
+    q.enqueue(20);
+    q.enqueue(30);
+    q.enqueue(40);
+    q.enqueue(50);
+    q.printqueue();
+    cout << q.dequeue() << endl
+         << q.dequeue() << endl;
+    q.printqueue();
+    cout << q.peek();
+}
+*/
+
+/*//! QUEUE - link list imp
+class Queue
+{
+public:
+    int info;
+    Queue *next;
+
+    Queue() : next(nullptr) {}
+    Queue(int i, Queue *n = 0) : info(i), next(n) {}
+};
+
+class List
+{
+public:
+    Queue *front;
+    Queue *rear;
+    List() : front(0), rear(0) {}
+
+    void enqueue(int val)
+    {
+        Queue *newNode = new Queue(val);
+        if (front == nullptr)
+        {
+            front = rear = newNode;
+        }
+        else
+        {
+            newNode->next = front;
+            front = newNode;
+        }
+    }
+    bool isEmpty() { return front == nullptr; }
+
+    int dequeue()
+    {
+        if (isEmpty())
+            throw underflow_error("Queue is empty!");
+        Queue *temp = front;
+        while (temp != rear)
+        {
+            temp = temp->next;
+        }
+        int val = temp->info;
+        temp->next = nullptr;
+        delete rear;
+        rear = temp;
+        return val;
+    }
+
+    int peek()
+    {
+        Queue *temp = front;
+        while (temp != 0)
+        {
+            temp = temp->next;
+        }
+        return temp->info;
+    }
+    void printlist()
+    {
+        Queue *temp = front;
+        while (temp != 0)
+        {
+            cout << "[" << temp->info << "]" << " -> ";
+            temp = temp->next;
+        }
+        cout << endl;
+    }
+};
+int main()
+{
+    List x;
+    x.enqueue(10);
+    x.enqueue(20);
+    x.enqueue(30);
+    x.enqueue(40);
+    x.enqueue(50);
+    x.printlist();
+    cout << x.dequeue() << endl
+         << x.dequeue() << endl;
+    x.printlist();
+    cout << x.peek();
+}*/
 
 /*//! LINK LISTS
 //! NOTE THAT WHEN TRYING TO RUN THE CODE, USE EITHER THE ORIGINAL OR THE IMPROVED VERSION OF THE FUNCTIONS AND NOT BOTH.
@@ -399,10 +658,10 @@ public:
     dll *prev;
     dll *next;
 
-    // default constructor
+    //* default constructor
     dll() : data(0), prev(nullptr), next(nullptr) {}
 
-    // param constructor
+    //* param constructor
     dll(int d, dll *p = 0, dll *n = 0) : data(d), prev(p), next(n) {}
 };
 
@@ -605,308 +864,839 @@ int main()
 }
 */
 
-/*//! STACK - array based implementation
-class Stack
+/* //! CIRCULAR DOUBLE LIST
+#include <iostream>
+using namespace std;
+
+struct cdll
 {
-public:
-    int capacity;
-    int top;
-    int *arr;
+    int data;
+    cdll *next;
+    cdll *prev;
 
-    Stack(int c) : capacity(c)
-    {
-        arr = new int[capacity];
-        top = -1; // initially stack is empty
-    }
-
-    // check if it is empty and is full
-    bool isEmpty() { return top == -1; }
-    bool isFull() { return top == capacity - 1; }
-
-    // add
-    void push(int val)
-    {
-        if (isFull())
-            throw overflow_error("Stack overflow!");
-
-        top = top + 1;
-        arr[top] = val;
-    }
-
-    int pop()
-    {
-        if (isEmpty())
-            throw underflow_error("Stack Underflow!");
-
-        int poppedVal = arr[top]; // save val first in order to return it
-        top = top - 1;
-        return poppedVal;
-    }
-
-    // return the top item without removing it
-    int peek()
-    {
-        if (isEmpty())
-            throw underflow_error("Stack Underflow!");
-
-        return arr[top];
-    }
-
-    void printstack()
-    {
-        for (int i = 0; i <= top; i++)
-        {
-            cout << arr[i] << " | ";
-        }
-        cout << endl;
-    }
-};
-int main()
-{
-    Stack s(5);
-    s.push(10);
-    s.push(20);
-    s.push(30);
-    s.push(40);
-    s.push(50);
-    s.printstack();
-    cout << s.pop() << endl;
-    cout << s.peek() << endl;
-    s.printstack();
-}
-*/
-
-/*//! STACK - LL based implementation
-struct Node
-{
-    int info;
-    Node *next;
-    Node() : next(nullptr) {}
-    Node(int i, Node *n = 0) : info(i), next(n) {}
-};
-class StackLL
-{
-public:
-    Node *top;
-    StackLL() : top(nullptr) {}
-
-    bool isEmpty() { return top == 0; }
-
-    void push(int val)
-    {
-        Node *newNode = new Node(val);
-
-        if (top == nullptr)
-        {
-            top = newNode;
-        }
-        else
-        {
-            newNode->next = top;
-            top = newNode;
-        }
-    }
-
-    int pop()
-    {
-        if (isEmpty())
-            throw underflow_error("Stack underflow!");
-
-        int poppedval = top->info;
-        Node *temp = top;
-        top = top->next;
-        delete temp;
-        return poppedval;
-    }
-
-    int peek()
-    {
-        if (isEmpty())
-            throw underflow_error("Stack underflow!");
-
-        return top->info;
-    }
-
-    void printstack()
-    {
-        Node *temp = top;
-        while (temp != 0)
-        {
-            cout << "[" << temp->info << "]" << " | ";
-            temp = temp->next;
-        }
-        cout << endl;
-    }
-};
-int main()
-{
-    StackLL s;
-    s.push(10);
-    s.push(20);
-    s.push(30);
-    s.push(40);
-    s.push(50);
-    s.printstack();
-    cout << s.pop() << endl;
-    s.printstack();
-    cout << s.peek() << endl;
-}
-*/
-
-/*//! QUEUE - Array based imp
-class Queue
-{
-public:
-    int *arr;
-    int front, rear, capacity, size;
-    Queue(int cap) : capacity(cap)
-    {
-        arr = new int[capacity];
-        front = 0;
-        rear = -1;
-        size = 0;
-    }
-
-    void enqueue(int val)
-    {
-        if (size >= capacity)
-            throw overflow_error("Queue Overflow!");
-
-        rear = (rear + 1) % capacity;
-        arr[rear] = val;
-        size++;
-    }
-
-    bool isEmpty()
-    {
-        return size == 0;
-    }
-
-    int dequeue()
-    {
-        if (isEmpty())
-            throw underflow_error("Queue Underflow!");
-
-        int val = arr[front];
-        front = (front + 1) % capacity;
-        size--;
-        return val;
-    }
-
-    int peek()
-    {
-        if (isEmpty())
-            throw underflow_error("Queue Underflow!");
-
-        return arr[front];
-    }
-
-    void printqueue()
-    {
-        for (int i = 0; i < size; i++)
-        {
-            int j = (front + i) % capacity;
-            cout << arr[j] << " | ";
-        }
-        cout << endl;
-    }
-};
-int main()
-{
-    Queue q(5);
-    q.enqueue(10);
-    q.enqueue(20);
-    q.enqueue(30);
-    q.enqueue(40);
-    q.enqueue(50);
-    q.printqueue();
-    cout << q.dequeue() << endl
-         << q.dequeue() << endl;
-    q.printqueue();
-    cout << q.peek();
-}
-*/
-
-//! QUEUE - link list imp
-/*class Queue
-{
-public:
-    int info;
-    Queue *next;
-
-    Queue() : next(nullptr) {}
-    Queue(int i, Queue *n = 0) : info(i), next(n) {}
+    cdll(int d, cdll *n = 0, cdll *p = 0) : data(d), next(n), prev(p) {}
 };
 
 class List
 {
 public:
-    Queue *front;
-    Queue *rear;
-    List() : front(0), rear(0) {}
-
-    void enqueue(int val)
+    cdll *head;
+    cdll *tail;
+    List() : head(nullptr), tail(nullptr) {}
+    void addTail(int value)
     {
-        Queue *newNode = new Queue(val);
-        if (front == nullptr)
+        cdll *newNode = new cdll(value);
+        if (head == nullptr)
         {
-            front = rear = newNode;
+            head = newNode;
+            tail = newNode;
+            head->next = head;
+            head->prev = head;
         }
         else
         {
-            newNode->next = front;
-            front = newNode;
+            newNode->next = head;
+            newNode->prev = tail;
+            tail->next = newNode;
+            head->prev = newNode;
+            tail = newNode;
         }
-    }
-    bool isEmpty() { return front == nullptr; }
-
-    int dequeue()
-    {
-        if (isEmpty())
-            throw underflow_error("Queue is empty!");
-        Queue *temp = front;
-        while (temp != rear)
-        {
-            temp = temp->next;
-        }
-        int val = temp->info;
-        temp->next = nullptr;
-        delete rear;
-        rear = temp;
-        return val;
     }
 
-    int peek()
+    void addHead(int value)
     {
-        Queue *temp = front;
-        while (temp != 0)
+        cdll *newNode = new cdll(value);
+
+        if (head == nullptr)
         {
-            temp = temp->next;
+            head = newNode;
+            tail = newNode;
+            head->next = head;
+            head->prev = head;
         }
-        return temp->info;
+        else
+        {
+            newNode->next = head;
+            newNode->prev = tail;
+            head->prev = newNode;
+            tail->next = newNode;
+            head = newNode;
+        }
     }
-    void printlist()
+
+    void addpos(int value, int pos)
     {
-        Queue *temp = front;
-        while (temp != 0)
+
+        if (pos == 1)
         {
-            cout << "[" << temp->info << "]" << " -> ";
-            temp = temp->next;
+            addHead(value);
+            return;
         }
+
+        if (pos < 1 || head == nullptr)
+        {
+            cout << "Position does not exist." << endl;
+            return;
+        }
+
+        cdll *cur = head;
+
+        for (int i = 1; i < pos - 1; i++)
+        {
+            cur = cur->next;
+        }
+        if (cur == tail)
+        {
+            addTail(value);
+            return;
+        }
+
+        cdll *newNode = new cdll(value);
+        newNode->next = cur->next;
+        newNode->prev = cur;
+        cur->next->prev = newNode;
+        cur->next = newNode;
+    }
+
+    void deleteNode(int value)
+    {
+        if (head == nullptr)
+        {
+            cout << "List is empty." << endl;
+            return;
+        }
+
+        cdll *cur = head;
+
+        do
+        {
+            if (cur->data == value)
+            {
+                if (head == tail)
+                {
+                    delete cur;
+                    head = nullptr;
+                    tail = nullptr;
+                }
+                else if (cur == head)
+                {
+                    head = head->next;
+
+                    head->prev = tail;
+                    tail->next = head;
+
+                    delete cur;
+                }
+                else if (cur == tail)
+                {
+                    tail = tail->prev;
+
+                    tail->next = head;
+                    head->prev = tail;
+
+                    delete cur;
+                }
+                else
+                {
+                    cur->prev->next = cur->next;
+                    cur->next->prev = cur->prev;
+
+                    delete cur;
+                }
+                cout << "Node deleted successfully." << endl;
+                return;
+            }
+            cur = cur->next;
+        } while (cur != head);
+
+        cout << "Value not found." << endl;
+    }
+
+    void printList()
+    {
+        if (head == nullptr)
+        {
+            cout << "List is empty." << endl;
+            return;
+        }
+        cdll *cur = head;
+        do
+        {
+            cout << cur->data << " ";
+            cur = cur->next;
+
+        } while (cur != head);
+
         cout << endl;
+    }
+
+    void printReverse()
+    {
+        if (tail == nullptr)
+        {
+            cout << "List is empty." << endl;
+            return;
+        }
+
+        cdll *cur = tail;
+
+        cout << "Reverse list: ";
+
+        do
+        {
+            cout << cur->data << " ";
+            cur = cur->prev;
+
+        } while (cur != tail);
+
+        cout << endl;
+    }
+
+    // destructor
+    ~List()
+    {
+        if (head == nullptr)
+        {
+            return;
+        }
+
+        cdll *cur = head->next;
+
+        while (cur != head)
+        {
+            cdll *temporary = cur;
+            cur = cur->next;
+            delete temporary;
+        }
+
+        delete head;
+
+        head = nullptr;
+        tail = nullptr;
+    }
+};
+
+int main()
+{
+    List list;
+
+    int choice;
+    int value;
+    int pos;
+
+    do
+    {
+        cout << "\n--- CDLL ---\n";
+        cout << "1. Insert at end\n";
+        cout << "2. Insert at beginning\n";
+        cout << "3. Insert at pos\n";
+        cout << "4. Delete node\n";
+        cout << "5. Print list\n";
+        cout << "6. Print reverse list\n";
+        cout << "7. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            cout << "Enter value: ";
+            cin >> value;
+            list.addTail(value);
+            break;
+
+        case 2:
+            cout << "Enter value: ";
+            cin >> value;
+            list.addHead(value);
+            break;
+
+        case 3:
+            cout << "Enter value: ";
+            cin >> value;
+
+            cout << "Enter pos: ";
+            cin >> pos;
+
+            list.addpos(value, pos);
+            break;
+
+        case 4:
+            cout << "Enter value to delete: ";
+            cin >> value;
+            list.deleteNode(value);
+            break;
+
+        case 5:
+            list.printList();
+            break;
+
+        case 6:
+            list.printReverse();
+            break;
+
+        case 7:
+            cout << "Program ended." << endl;
+            break;
+
+        default:
+            cout << "Invalid choice." << endl;
+        }
+
+    } while (choice != 7);
+
+    return 0;
+}
+*/
+
+/*//! MERGE TWO LISTS
+struct ListNode
+{
+    int val;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
+    ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
+};
+
+class Solution
+{
+public:
+    ListNode *mergeTwoLists(ListNode *list1, ListNode *list2)
+    {
+        ListNode *mH = nullptr;
+        ListNode *mT = nullptr;
+
+        // Select the node and add it in the master merged list
+        ListNode *selected = nullptr;
+
+        while (list1 != nullptr && list2 != nullptr)
+        {
+            // comparison
+            if (list1->val <= list2->val)
+            {
+                selected = list1;
+                list1 = list1->next;
+            }
+            else
+            {
+                selected = list2;
+                list2 = list2->next;
+            }
+            // detachment so that we can make sure to add only one node with none connecting it after
+            selected->next = nullptr;
+            if (mH == nullptr)
+            {
+                mH = mT = selected;
+            }
+            else
+            {
+                mT->next = selected;
+                mT = selected;
+            }
+        }
+
+        // if one of the node ends, continue selecting the next one.
+        if (mH == nullptr)
+        {
+            if (list1 != nullptr)
+            {
+                return list1;
+            }
+            return list2;
+        }
+        if (list1 != nullptr)
+            mT->next = list1;
+        else
+            mT->next = list2;
+
+        return mH;
+    }
+};
+
+*/
+
+//! SEARCHES ON LINK LISTS
+//! BUBBLE ON LINK LIST
+//! SELECTION ON LINK LIST
+//! INSERTION ON LINK LIST
+//! COMB ON LINK LIST
+//! SHELL ON LINK LIST
+
+/*  //! RADIX SORT
+int main()
+{
+    int arr[] = {500, 499, 38, 2, 770, 802};
+    int n = 6;
+    //* Find the max number. Reason: To get maximum number of digits which will determine how many passes will it take to sort the array.
+    int maxNo = arr[0];
+    for (int i = 0; i < n; i++)
+    {
+        if (arr[i] > maxNo)
+        {
+            maxNo = arr[i];
+        }
+    }
+
+    int output[6] = {0};
+    //* formula to find digits: num/place  % 10
+    //* for an array, digits = arr[i]/place %10
+    //* we start with place = 1 because the smallest place is ones; we take the range till maxNo/place>0 because if maxNo is divided by a place greater than its' digits place, the answer becomes 0, say the largest in this case is 802. 802 divided by 1, 10 n 100 give >0 but with 1000 it gives 0; the sequence in which places increase are 1, 10 , 100, 1000. the pattern is 10 being divided each time so place*10;
+
+    for (int place = 1; maxNo / place > 0; place *= 10)
+    {
+        int count[10] = {0};
+
+        for (int i = 0; i < n; i++)
+        {
+            int digit = (arr[i] / place) % 10;
+            count[digit]++; //* whatever the digit comes, increment that position's value.
+        }
+
+        cout << "\nCount for " << place << ": ";
+        for (int i = 0; i < 10; i++)
+        {
+            cout << count[i] << " ";
+        }
+        //*this tells how many numbers are there before and at a certain digit.
+        //* say count[1] = 0+2 = 2. This means there are two numbers with either 0 or 1 digit at less than equal to 1.
+        //* Whatever we get from count[i], we subtract it from 1. Say count[2]= 4 -1 = 3. This shows that for pos 2, there are 3 elements with either digits -> 0, 1, and 2. After we place them accordingly, we decrement the count.
+        for (int i = 1; i < 10; i++)
+        {
+            count[i] = count[i] + count[i - 1];
+        }
+
+        cout << "\nCount for " << place << ": ";
+        for (int i = 0; i < 10; i++)
+            cout << count[i] << " ";
+        cout << endl;
+
+        //* we now traverse the array from right to left for stability and add the actual numbers accordingly in output. For stability, the count array should go from left to right and the current one should go from right to left. Otherwise we get unsorted array.
+        //* Think of it like this:
+        //*Count for place 1: 2 0 2 0 0 0 0 0 1 1
+        //*Count for place 1: 2 2 4 4 4 4 4 4 5 6
+
+        for (int i = n - 1; i >= 0; i--) //* for the rightmose digit "802", digit = 2. then
+        {
+            int digit = (arr[i] / place) % 10;
+            output[count[digit] - 1] = arr[i]; //*output[count[2]-1] = output[4-1] = output[3]. then output[3] = arr[5].
+            count[digit]--;                    //*count[2]-- = 4-- = 3. Now when it checks for number 2, its count[i] will show 3 instead of 4.
+        }
+
+        //*count[d] always points to the "rightmost empty spot" for digit d. So to keep order, the "last element with digit d" we see should go to the "rightmost spot". To make the last element go to the rightmost spot, we have to see it last. That’s why we scan the input array backwards.
+        for (int i = 0; i < n; i++)
+        {
+            arr[i] = output[i];
+        }
+    }
+
+    cout << "\nArray: ";
+    for (int i = 0; i < n; i++)
+    {
+        cout << arr[i] << " ";
+    }
+}
+*/
+
+/*  //! COMB SORT
+int main()
+{
+    int arr[] = {5, 4, 3, 2, 1};
+    int n = 5;
+    int gap = n;
+    bool swapped = true;
+
+    while (gap > 1 || swapped)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            cout << arr[i] << " ";
+        }
+
+        cout << endl;
+        gap = gap / 1.3;
+        if (gap < 1)
+            gap = 1;
+
+        //*start
+        swapped = false;
+        for (int i = 0; i + gap < n; i++)
+        {
+            if (arr[i] > arr[i + gap])
+            {
+                swap(arr[i], arr[i + gap]);
+                swapped = true;
+            }
+        }
+    }
+    cout << endl;
+    for (int i = 0; i < n; i++)
+    {
+        cout << arr[i] << " ";
+    }
+}
+*/
+
+/* //! INSERTION SORT
+int main()
+{
+    int arr[] = {5, 4, 3, 2, 1};
+    int n = sizeof(arr) / sizeof(arr[0]);
+
+    for (int i = 1; i < n; i++)
+    {
+        int key = arr[i];
+        int j = i - 1;
+        while (j >= 0 && arr[j] > key)
+        {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+    for (int i = 0; i < n; i++)
+    {
+        cout << arr[i] << " ";
+    }
+}
+*/
+
+/* //! ARRAYS USING STRUCTS
+ */
+
+/* //! DOUBLE POINTERS (MATRIX) ALLOCATION + USING RULE OF 3
+* ALLOCATION syntax -->
+
+    int** data;
+    data = new int*[rows]; //* say rows = 3, this will create space for 3 int pointers, not the rows themself. Each row pointer must be made to point to a dynamically allocated col.
+    for (int i = 0; i < rows; i++) {
+            data[i] = new int[cols];
+
+            for (int j = 0; j < cols; j++){
+                data[i][j] = 0;     //*merely fills in zero at all positions.
+            } }
+*The row structure looks like:
+data
+ │
+ ├── data[0]  // int*
+ ├── data[1]  // int*
+ └── data[2]  // int*
+
+*after the first for loop, it looks like:   the statement inside the loop allocates int space for one row pointer.
+ data
+ │
+ ├──► data[0]: [ int ][ int ][ int ][ int ]
+ ├──► data[1]: [ int ][ int ][ int ][ int ]
+ └──► data[2]: [ int ][ int ][ int ][ int ]
+
+*DELETION:
+ ~Matrix()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            delete[] data[i];      //* first delete the ints inside each row,
+        }
+        delete[] data;      //*then delete the pointer holding these ints. Think of data like a cabinet and data[i] like drawers inside the cabinet. To delete the cabinet, you first delete the drawers(columns), and then delete the cabinet pointer as well.
+    }   //* Also since we're using two "new's", we have to delete two times.
+
+*DEEP COPY CONSTRUCTOR:
+Matrix(const Matrix& other): rows(other.rows), cols(other.cols){    //*allocation of sizes (usual stuff)
+//*allocating memory
+data = new int* [rows];
+for(int i = 0; i < rows; i++){
+data[i] = new int[cols];
+
+for(int j = 0; j < cols; j++){
+data[i][j] = other.data[i][j];    //*copying data. Similar to when we first allocated the parameterized constructor, just this time, we copy real values instead of putting in zeros
+} } }
+
+*COPY ASSIGNMENT OPERATOR
+Matrix &operator=(const Matrix &other){
+if(this != &other){     //*step 1: avoid self assignment
+  int** newData = new int* [other.rows];    //*step 2: allocate a new row-pointer array
+//* step 3: allocate and copy every row
+  for(int i = 0; i < other.rows; i++){
+    newData = new int[other.cols];
+
+  for(int j = 0; j < other.cols; j++){
+    newData[i][j] = other.data[i][j];
+  } }
+//* step 4: delete the old matrix
+  for(int i = 0; i < other.rows; i++)
+    delete[] data[i];
+
+  delete[] data;
+//* step 5: take ownership
+  rows = other.rows;
+  cols = other.cols;
+  data = newData;
+
+}
+  return *this;
+}
+
+*OPERATOR+
+*we can add matrix elements normally by using loops but we cant write something like Matrix C = A + B.
+Matrix& operator+(const Matrix& other){
+Matrix result(rows, cols);      //* create an object in which the sum(result) is stored
+
+for(int i = 0; i < rows; i++){
+    for(int j = 0; j < cols; j++){
+        result.data[i][j] = data[i][j] + other.data[i][j];
+} }
+return result;
+}
+
+?WHOLE PROGRAM
+class Matrix
+{
+    int rows;
+    int cols;
+    int **data;
+
+public:
+    Matrix(int r, int c) : rows(r), cols(c)
+    {
+        data = new int *[rows];
+        for (int i = 0; i < rows; i++)
+        {
+            data[i] = new int[cols];
+            for (int j = 0; j < cols; j++)
+            {
+                data[i][j] = 0;
+            }
+        }
+    }
+
+    //* functions for bounds checking, inputting values
+    bool validBounds(int r, int c)
+    {
+        if ((r < 0 && r >= rows) || (c < 0 && c >= cols))
+            return false;
+        else
+            return true;
+    }
+
+    void set(int r, int c, int value)
+    {
+        if (validBounds(r, c))
+            data[r][c] = value;
+        else
+            cout << "Invalid bounds.\n";
+    }
+
+    Matrix(const Matrix &other) : rows(other.rows), cols(other.cols)
+    {
+        data = new int *[other.rows];
+        for (int i = 0; i < other.rows; i++)
+        {
+            data[i] = new int[cols];
+            for (int j = 0; j < other.cols; j++)
+            {
+                data[i][j] = other.data[i][j];
+            }
+        }
+    }
+
+    ~Matrix()
+    {
+        for (int i = 0; i < rows; i++)
+            delete[] data[i];
+        delete[] data;
+    }
+    Matrix &operator=(const Matrix &other)
+    {
+    if(this!=other){
+        int **newData = new int *[other.rows];
+        for (int i = 0; i < other.rows; i++)
+        {
+            newData[i] = new int[cols];
+            for (int j = 0; j < other.cols; j++)
+            {
+                newData[i][j] = other.data[i][j];
+            }
+        }
+        for (int i = 0; i < rows; i++)
+            delete[] data[i];
+        delete[] data;
+
+        rows = other.rows;
+        cols = other.cols;
+        data = newData;
+        }
+        return *this;
+    }
+
+    Matrix operator+(const Matrix &other)
+    {
+        Matrix result(rows, cols);
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                result.data[i][j] = data[i][j] + other.data[i][j];
+            }
+        }
+        return result;
+    }
+
+    void display()
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                cout << data[i][j] << " ";
+            }
+            cout << endl;
+        }
     }
 };
 int main()
 {
-    List x;
-    x.enqueue(10);
-    x.enqueue(20);
-    x.enqueue(30);
-    x.enqueue(40);
-    x.enqueue(50);
-    x.printlist();
-    cout << x.dequeue() << endl
-         << x.dequeue() << endl;
-    x.printlist();
-    cout << x.peek();
-}*/
+    Matrix A(2, 2), B(2, 2);
+    A.set(0, 0, 3);
+    A.set(0, 1, 4);
+    A.set(1, 0, 5);
+    A.set(1, 1, 6);
+
+    B.set(0, 0, 7);
+    B.set(0, 1, 6);
+    B.set(1, 0, 5);
+    B.set(1, 1, 4);
+
+    cout << "A: " << endl;
+    A.display();
+    cout << endl
+         << "B: \n";
+    B.display();
+    cout << endl;
+
+    Matrix A1(A);
+    Matrix A2 = A;
+    A1.set(0, 0, 30);
+    A2.set(0, 0, 31);
+
+    Matrix C = A + B;
+    cout << "Sum C: \n";
+    C.display();
+    cout << endl;
+
+    cout << "A1: \n";
+    A1.display();
+    cout << endl;
+    A2.display();
+
+    B.set(-1, 5, 100);
+}
+
+?Similar program, just easier
+class DynamicArray
+{
+    int *arr;
+    int size;
+    int capacity;
+
+public:
+    DynamicArray() : size(0), capacity(2)
+    {
+        arr = new int[capacity];
+    }
+    DynamicArray(const DynamicArray &other) : size(other.size), capacity(other.capacity)
+    {
+        arr = new int[capacity];
+        for (int i = 0; i < size; i++)
+        {
+            arr[i] = other.arr[i];
+        }
+    }
+
+    DynamicArray &operator=(const DynamicArray &other)
+    {
+        if (this != &other)
+        {
+            int *newarr = new int[other.capacity];
+            for (int i = 0; i < other.size; i++)
+            {
+                newarr[i] = other.arr[i];
+            }
+            delete[] arr;
+            capacity = other.capacity;
+            size = other.size;
+            arr = newarr;
+        }
+        return *this;
+    }
+
+    ~DynamicArray()
+    {
+        delete[] arr;
+    }
+
+    void pushBack(int val)
+    {
+        if (size == capacity)
+        {
+            int newcap = capacity * 2;
+            int *newarr = new int[newcap];
+            for (int i = 0; i < size; i++)
+            {
+                newarr[i] = arr[i];
+            }
+            delete[] arr;
+            capacity = newcap;
+            arr = newarr;
+        }
+
+        arr[size] = val;
+        size++;
+    }
+
+    int &operator[](int index)
+    {
+        if (index < 0 || index >= size)
+            throw out_of_range("Index is out of range.\n");
+        return arr[index];
+    }
+
+    const int &operator[](int index) const
+    {
+        if (index < 0 || index >= size)
+            throw out_of_range("Index is out of range.\n");
+        return arr[index];
+    }
+
+    void print() const
+    {
+        for (int i = 0; i < size; i++)
+        {
+            cout << arr[i] << " ";
+        }
+    }
+};
+int main()
+{
+    DynamicArray obj;
+    obj.pushBack(10);
+    obj.pushBack(20);
+    obj.pushBack(30);
+    obj.pushBack(40);
+    obj.pushBack(50);
+    obj.pushBack(60);
+    cout << "OBJECT: ";
+    obj.print();
+    cout << endl;
+    DynamicArray obj2;
+    obj2 = obj;
+    cout << "COPY: ";
+    obj2.print();
+    cout << endl;
+    obj2[0] = 1000;
+    cout << "MODIFIED OBJ AND COPY: \n";
+    obj.print();
+    cout << endl;
+    obj2.print();
+    cout << endl;
+}
+
+*/
